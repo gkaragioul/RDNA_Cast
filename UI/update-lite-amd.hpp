@@ -19,7 +19,7 @@
 
 #define GK_OBS_LITE_VERSION "0.7.0"
 #define GK_OBS_LITE_PRODUCT_NAME "RDNA Cast"
-#define GK_OBS_LITE_RELEASES_REPO "georgekgr12/GK_OBS_LITE_AMD_RELEASES"
+#define GK_OBS_LITE_RELEASES_REPO "georgekgr12/RDNACast_Releases"
 #define GK_OBS_LITE_RELEASES_API "https://api.github.com/repos/" GK_OBS_LITE_RELEASES_REPO "/releases/latest"
 
 /* --- Update Check Thread --- */

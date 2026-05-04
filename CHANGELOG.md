@@ -71,11 +71,11 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 - Close-to-tray behavior
 - Inno Setup installer with custom branding
 
-[0.7.0]: https://github.com/georgekgr12/GK_OBS_LITE_AMD/releases/tag/v0.7.0
-[0.6.7]: https://github.com/georgekgr12/GK_OBS_LITE_AMD/releases/tag/v0.6.7
-[0.6.6]: https://github.com/georgekgr12/GK_OBS_LITE_AMD/releases/tag/v0.6.6
-[0.6.5]: https://github.com/georgekgr12/GK_OBS_LITE_AMD/releases/tag/v0.6.5
-[0.6.4]: https://github.com/georgekgr12/GK_OBS_LITE_AMD/releases/tag/v0.6.4
-[0.6.3]: https://github.com/georgekgr12/GK_OBS_LITE_AMD/releases/tag/v0.6.3
-[0.6.2]: https://github.com/georgekgr12/GK_OBS_LITE_AMD/releases/tag/v0.6.2
-[0.5.0]: https://github.com/georgekgr12/GK_OBS_LITE_AMD/releases/tag/v0.5.0
+[0.7.0]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.7.0
+[0.6.7]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.7
+[0.6.6]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.6
+[0.6.5]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.5
+[0.6.4]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.4
+[0.6.3]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.3
+[0.6.2]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.2
+[0.5.0]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.5.0

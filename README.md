@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/georgekgr12/GK_OBS_LITE_AMD_RELEASES/releases">Download</a> &bull;
+  <a href="https://github.com/georgekgr12/RDNACast_Releases/releases">Download</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#performance">Performance</a> &bull;
   <a href="#amd-encoder-fixes">AMD Fixes</a> &bull;
@@ -126,8 +126,8 @@ Any AMD system with a Zen 2+ CPU and RDNA+ GPU should work. AVX2 required (all Z
 
 ### Quick Build
 ```cmd
-git clone https://github.com/georgekgr12/GK_OBS_LITE_AMD.git
-cd GK_OBS_LITE_AMD
+git clone https://github.com/georgekgr12/RDNACast.git
+cd RDNACast
 cmake --preset amd-lite-x64
 cmake --build build_amd_lite --config RelWithDebInfo --parallel
 ```

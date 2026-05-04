@@ -92,4 +92,4 @@ This file is a courtesy summary — the authoritative license for each component
 
 ---
 
-If you spot a missing or incorrectly-listed component, please open an issue at <https://github.com/georgekgr12/GK_OBS_LITE_AMD/issues>.
+If you spot a missing or incorrectly-listed component, please open an issue at <https://github.com/georgekgr12/RDNACast/issues>.
