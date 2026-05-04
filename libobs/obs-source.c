@@ -3356,11 +3356,14 @@ static void clean_cache(obs_source_t *source)
 	}
 }
 
-#ifdef OBS_AMD_LITE
-#define MAX_ASYNC_FRAMES 12
-#else
+/* RDNA Cast: reverted to upstream value of 30. The lower value (12)
+ * caused free_async_cache() to fire too aggressively on fast-delivering
+ * sources (monitor capture in some configurations), purging the cache
+ * mid-render and leaving the scene composition with no source frame
+ * to draw — visible as a black canvas while the source's own preview
+ * dialog rendered fine. Memory savings of 18 frame metadata structs
+ * were negligible vs. the rendering breakage. */
 #define MAX_ASYNC_FRAMES 30
-#endif
 //if return value is not null then do (os_atomic_dec_long(&output->refs) == 0) && obs_source_frame_destroy(output)
 static inline struct obs_source_frame *cache_video(struct obs_source *source, const struct obs_source_frame *frame)
 {

@@ -17,7 +17,7 @@
 /* RDNA Cast: dark + red (Yami Rachni variant) chosen as default theme to
  * align visually with the Radeon-red brand. Closest red-leaning variant
  * shipped with stock Yami; replace with a custom RDNACast theme later. */
-#define DEFAULT_THEME "com.obsproject.Yami.RDNACast"
+#define DEFAULT_THEME "com.obsproject.Yami.RDNACastDark"
 #else
 #define DEFAULT_THEME "com.obsproject.Yami.Original"
 #endif
