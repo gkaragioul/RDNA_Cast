@@ -6,6 +6,40 @@
 #include <qt-wrappers.hpp>
 #include <util/platform.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#pragma comment(lib, "version.lib")
+
+/* Query the file-version of the AMD AMF runtime DLL (amfrt64.dll), which is
+ * installed alongside the Adrenalin driver. Returns empty string if the DLL
+ * isn't present or the version data can't be read. */
+static QString GetAMFRuntimeVersion()
+{
+	const char *dllName = "amfrt64.dll";
+	DWORD handle = 0;
+	DWORD size = GetFileVersionInfoSizeA(dllName, &handle);
+	if (size == 0)
+		return QString();
+	QByteArray buf(static_cast<int>(size), 0);
+	if (!GetFileVersionInfoA(dllName, handle, size, buf.data()))
+		return QString();
+	VS_FIXEDFILEINFO *info = nullptr;
+	UINT infoSize = 0;
+	if (!VerQueryValueA(buf.constData(), "\\", reinterpret_cast<LPVOID *>(&info), &infoSize) || !info)
+		return QString();
+	return QStringLiteral("%1.%2.%3.%4")
+		.arg(HIWORD(info->dwFileVersionMS))
+		.arg(LOWORD(info->dwFileVersionMS))
+		.arg(HIWORD(info->dwFileVersionLS))
+		.arg(LOWORD(info->dwFileVersionLS));
+}
+#else
+static QString GetAMFRuntimeVersion()
+{
+	return QString();
+}
+#endif
+
 #include <curl/curl.h>
 #include <util/curl/curl-helper.h>
 #include <QFile>
@@ -406,6 +440,11 @@ GKAboutDialog::GKAboutDialog(QWidget *parent) : QDialog(parent)
 
 	auto *layout = new QVBoxLayout(this);
 
+	QString amfVersion = GetAMFRuntimeVersion();
+	QString amfLine = amfVersion.isEmpty()
+				  ? QStringLiteral("<p><b>AMD AMF runtime:</b> not detected</p>")
+				  : QStringLiteral("<p><b>AMD AMF runtime:</b> %1</p>").arg(amfVersion);
+
 	auto *titleLabel = new QLabel(
 		"<div style='text-align:center;'>"
 		"<h1 style='color:#e63946;'>RDNA Cast</h1>"
@@ -413,6 +452,7 @@ GKAboutDialog::GKAboutDialog(QWidget *parent) : QDialog(parent)
 		"<p>High-performance streaming for AMD Radeon. Gaming unleashed.</p>"
 		"<p><b>Developer:</b> George Karagioules</p>"
 		"<p><b>Based on:</b> OBS Studio 31.0.3 by the OBS Project</p>"
+		+ amfLine +
 		"<p style='font-size:11px;color:#888;'>Not affiliated with, endorsed by, or sponsored by "
 		"Advanced Micro Devices, Inc. or the OBS Project. &quot;AMD&quot;, &quot;Radeon&quot;, and "
 		"&quot;RDNA&quot; are trademarks of Advanced Micro Devices, Inc.</p>"

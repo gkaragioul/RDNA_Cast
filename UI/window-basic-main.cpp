@@ -2568,6 +2568,33 @@ void OBSBasic::OnFirstLoad()
 	}
 #endif
 
+#ifdef OBS_AMD_LITE
+	/* RDNA Cast: one-time non-AMD-hardware warning. The app still runs on
+	 * NVIDIA/Intel — the AMF-encoder fixes simply don't apply, and a user
+	 * is probably better served by stock OBS Studio. Show once per install,
+	 * dismissible. */
+	{
+		bool warned = config_get_bool(App()->GetUserConfig(), "BasicWindow", "RDNAHardwareWarned");
+		if (!warned) {
+			AMDGPUInfo gpu = DetectAMDGPU();
+			if (!gpu.detected) {
+				QMessageBox::information(
+					this, QStringLiteral("RDNA Cast"),
+					QStringLiteral(
+						"<p><b>RDNA Cast is optimized for AMD Radeon GPUs.</b></p>"
+						"<p>An AMD GPU was not detected on this system. RDNA Cast will "
+						"still run, but the AMD-specific encoder fixes (AV1 filler-data, "
+						"VBV cap, pre-analysis disable) and Zen-targeted optimizations "
+						"won't apply.</p>"
+						"<p>If you have an NVIDIA or Intel GPU, you'll likely get a better "
+						"experience with stock <a href=\"https://obsproject.com\">OBS Studio</a>.</p>"
+						"<p><i>This message won't appear again.</i></p>"));
+			}
+			config_set_bool(App()->GetUserConfig(), "BasicWindow", "RDNAHardwareWarned", true);
+		}
+	}
+#endif
+
 	Auth::Load();
 
 	bool showLogViewerOnStartup = config_get_bool(App()->GetUserConfig(), "LogViewer", "ShowLogStartup");
@@ -2822,9 +2849,14 @@ void OBSBasic::CreateHotkeys()
 		}
 	};
 
+#ifndef OBS_AMD_LITE
+	/* RDNA Cast: dropped from Hotkeys list — niche, requires stream delay setting */
 	forceStreamingStopHotkey = obs_hotkey_register_frontend("OBSBasic.ForceStopStreaming",
 								Str("Basic.Main.ForceStopStreaming"), cb, this);
 	LoadHotkey(forceStreamingStopHotkey, "OBSBasic.ForceStopStreaming");
+#else
+	(void)cb;
+#endif
 
 	recordingHotkeys = obs_hotkey_pair_register_frontend(
 		"OBSBasic.StartRecording", Str("Basic.Main.StartRecording"), "OBSBasic.StopRecording",
@@ -2846,6 +2878,8 @@ void OBSBasic::CreateHotkeys()
 						  this, this);
 	LoadHotkeyPair(pauseHotkeys, "OBSBasic.PauseRecording", "OBSBasic.UnpauseRecording");
 
+#ifndef OBS_AMD_LITE
+	/* RDNA Cast: dropped — Split Recording File is niche */
 	splitFileHotkey = obs_hotkey_register_frontend(
 		"OBSBasic.SplitFile", Str("Basic.Main.SplitFile"),
 		[](void *, obs_hotkey_id, obs_hotkey_t *, bool pressed) {
@@ -2855,6 +2889,7 @@ void OBSBasic::CreateHotkeys()
 		this);
 	LoadHotkey(splitFileHotkey, "OBSBasic.SplitFile");
 
+	/* RDNA Cast: dropped — Hybrid MP4 chapter markers are a niche format-specific feature */
 	addChapterHotkey = obs_hotkey_register_frontend(
 		"OBSBasic.AddChapterMarker", Str("Basic.Main.AddChapterMarker"),
 		[](void *, obs_hotkey_id, obs_hotkey_t *, bool pressed) {
@@ -2863,6 +2898,7 @@ void OBSBasic::CreateHotkeys()
 		},
 		this);
 	LoadHotkey(addChapterHotkey, "OBSBasic.AddChapterMarker");
+#endif
 
 	replayBufHotkeys =
 		obs_hotkey_pair_register_frontend("OBSBasic.StartReplayBuffer", Str("Basic.Main.StartReplayBuffer"),
@@ -2893,6 +2929,8 @@ void OBSBasic::CreateHotkeys()
 		MAKE_CALLBACK(basic.previewEnabled, basic.DisablePreview, "Disabling preview"), this, this);
 	LoadHotkeyPair(togglePreviewHotkeys, "OBSBasic.EnablePreview", "OBSBasic.DisablePreview");
 
+#ifndef OBS_AMD_LITE
+	/* RDNA Cast: dropped — Studio Mode hidden in lite UI */
 	togglePreviewProgramHotkeys = obs_hotkey_pair_register_frontend(
 		"OBSBasic.EnablePreviewProgram", Str("Basic.EnablePreviewProgramMode"),
 		"OBSBasic.DisablePreviewProgram", Str("Basic.DisablePreviewProgramMode"),
@@ -2902,6 +2940,7 @@ void OBSBasic::CreateHotkeys()
 	LoadHotkeyPair(togglePreviewProgramHotkeys, "OBSBasic.EnablePreviewProgram", "OBSBasic.DisablePreviewProgram",
 		       "OBSBasic.TogglePreviewProgram");
 
+	/* RDNA Cast: dropped — Source/Context toolbar toggles via View menu only */
 	contextBarHotkeys = obs_hotkey_pair_register_frontend(
 		"OBSBasic.ShowContextBar", Str("Basic.Main.ShowContextBar"), "OBSBasic.HideContextBar",
 		Str("Basic.Main.HideContextBar"),
@@ -2909,8 +2948,11 @@ void OBSBasic::CreateHotkeys()
 		MAKE_CALLBACK(basic.ui->contextContainer->isVisible(), basic.HideContextBar, "Hiding Context Bar"),
 		this, this);
 	LoadHotkeyPair(contextBarHotkeys, "OBSBasic.ShowContextBar", "OBSBasic.HideContextBar");
+#endif
 #undef MAKE_CALLBACK
 
+#ifndef OBS_AMD_LITE
+	/* RDNA Cast: dropped — Scene Transitions dock hidden by default */
 	auto transition = [](void *data, obs_hotkey_id, obs_hotkey_t *, bool pressed) {
 		if (pressed)
 			QMetaObject::invokeMethod(static_cast<OBSBasic *>(data), "TransitionClicked",
@@ -2920,6 +2962,7 @@ void OBSBasic::CreateHotkeys()
 	transitionHotkey = obs_hotkey_register_frontend("OBSBasic.Transition", Str("Transition"), transition, this);
 	LoadHotkey(transitionHotkey, "OBSBasic.Transition");
 
+	/* RDNA Cast: dropped — Stats dialog removed from View menu */
 	auto resetStats = [](void *data, obs_hotkey_id, obs_hotkey_t *, bool pressed) {
 		if (pressed)
 			QMetaObject::invokeMethod(static_cast<OBSBasic *>(data), "ResetStatsHotkey",
@@ -2929,6 +2972,7 @@ void OBSBasic::CreateHotkeys()
 	statsHotkey =
 		obs_hotkey_register_frontend("OBSBasic.ResetStats", Str("Basic.Stats.ResetStats"), resetStats, this);
 	LoadHotkey(statsHotkey, "OBSBasic.ResetStats");
+#endif
 
 	auto screenshot = [](void *data, obs_hotkey_id, obs_hotkey_t *, bool pressed) {
 		if (pressed)
@@ -8966,6 +9010,13 @@ void OBSBasic::on_resetDocks_triggered(bool force)
 
 	resizeDocks(docks, {cy, cy, cy, cy, cy}, Qt::Vertical);
 	resizeDocks(docks, sizes, Qt::Horizontal);
+
+#ifdef OBS_AMD_LITE
+	/* RDNA Cast: Scene Transitions dock hidden by default. The dock remains
+	 * registered with menuDocks so power users can re-enable it via the
+	 * View > Docks menu if they actually use transitions. */
+	ui->transitionsDock->setVisible(false);
+#endif
 
 	activateWindow();
 }

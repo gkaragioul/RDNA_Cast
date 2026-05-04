@@ -13,4 +13,11 @@
 #define YOUTUBE_CLIENTID_HASH 0x@YOUTUBE_CLIENTID_HASH@
 #define YOUTUBE_SECRET_HASH   0x@YOUTUBE_SECRET_HASH@
 
+#ifdef OBS_AMD_LITE
+/* RDNA Cast: dark + red (Yami Rachni variant) chosen as default theme to
+ * align visually with the Radeon-red brand. Closest red-leaning variant
+ * shipped with stock Yami; replace with a custom RDNACast theme later. */
+#define DEFAULT_THEME "com.obsproject.Yami.Rachni"
+#else
 #define DEFAULT_THEME "com.obsproject.Yami.Original"
+#endif

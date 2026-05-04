@@ -356,6 +356,14 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 
 	ui->listWidget->setAttribute(Qt::WA_MacShowFocusRect, false);
 
+#ifdef OBS_AMD_LITE
+	/* RDNA Cast: Appearance widget moved into the General page. Hide the
+	 * (now-empty) Appearance row in the navigation list. Accessibility page
+	 * removed entirely from the lite UI. */
+	ui->listWidget->item(Pages::APPEARANCE)->setHidden(true);
+	ui->listWidget->item(Pages::ACCESSIBILITY)->setHidden(true);
+#endif
+
 	/* clang-format off */
 	HookWidget(ui->language,             COMBO_CHANGED,  GENERAL_CHANGED);
 	HookWidget(ui->updateChannelBox,     COMBO_CHANGED,  GENERAL_CHANGED);

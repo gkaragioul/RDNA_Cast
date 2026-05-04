@@ -663,7 +663,6 @@
     <addaction name="menuCrashLogs"/>
     <addaction name="separator"/>
     <addaction name="actionCheckForUpdates"/>
-    <addaction name="actionRepair"/>
     <addaction name="actionRestartSafe"/>
     <addaction name="separator"/>
     <addaction name="actionShowAbout"/>
@@ -762,7 +761,6 @@
     <addaction name="separator"/>
     <addaction name="transformMenu"/>
     <addaction name="orderMenu"/>
-    <addaction name="scalingMenu"/>
     <addaction name="actionLockPreview"/>
     <addaction name="separator"/>
     <addaction name="actionAdvAudioProperties"/>
@@ -788,11 +786,11 @@
     <addaction name="actionDupSceneCollection"/>
     <addaction name="actionRenameSceneCollection"/>
     <addaction name="actionRemoveSceneCollection"/>
+    <addaction name="separator"/>
     <addaction name="actionImportSceneCollection"/>
     <addaction name="actionExportSceneCollection"/>
     <addaction name="separator"/>
     <addaction name="actionShowMissingFiles"/>
-    <addaction name="actionRemigrateSceneCollection"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="viewMenu">
@@ -833,11 +831,6 @@
     <addaction name="toggleSourceIcons"/>
     <addaction name="toggleStatusBar"/>
     <addaction name="separator"/>
-    <addaction name="stats"/>
-    <addaction name="separator"/>
-    <addaction name="multiviewProjectorMenu"/>
-    <addaction name="multiviewProjectorWindowed"/>
-    <addaction name="separator"/>
     <addaction name="actionAlwaysOnTop"/>
    </widget>
    <widget class="QMenu" name="menuTools">
@@ -862,7 +855,6 @@
    <addaction name="menuDocks"/>
    <addaction name="profileMenu"/>
    <addaction name="sceneCollectionMenu"/>
-   <addaction name="menuTools"/>
    <addaction name="menuBasic_MainMenu_Help"/>
   </widget>
   <widget class="OBSBasicStatusBar" name="statusbar"/>

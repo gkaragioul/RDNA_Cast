@@ -241,8 +241,16 @@ void OBSBasicStatusBar::UpdateCPUUsage()
 			QString gpuName = cachedGpu.name;
 			gpuName.replace("AMD Radeon ", "");
 			gpuName.replace("AMD ", "");
-			text += QString("  |  %1  VRAM: %2/%3 GB")
+			QString genShort = QString::fromUtf8(GetGenerationName(cachedGpu.generation));
+			int parenIdx = genShort.indexOf(" (");
+			if (parenIdx > 0)
+				genShort = genShort.left(parenIdx);
+			QString genTag = (cachedGpu.generation != AMDGeneration::Unknown)
+						 ? QString(" (%1)").arg(genShort)
+						 : QString();
+			text += QString("  |  %1%2  VRAM: %3/%4 GB")
 					.arg(gpuName)
+					.arg(genTag)
 					.arg(gpuStats.vramUsedMB / 1024.0, 0, 'f', 1)
 					.arg(gpuStats.vramTotalMB / 1024.0, 0, 'f', 1);
 		} else if (gpuStats.valid) {

@@ -508,7 +508,14 @@ void OBSApp::InitUserConfigDefaults()
 	config_set_default_bool(userConfig, "BasicWindow", "ShowListboxToolbars", true);
 	config_set_default_bool(userConfig, "BasicWindow", "ShowStatusBar", true);
 	config_set_default_bool(userConfig, "BasicWindow", "ShowSourceIcons", true);
+#ifdef OBS_AMD_LITE
+	/* RDNA Cast: source context toolbar (Properties/Filters/source-specific
+	 * controls strip below the preview) hidden by default. Users can re-enable
+	 * via View > Source Toolbar. */
+	config_set_default_bool(userConfig, "BasicWindow", "ShowContextToolbars", false);
+#else
 	config_set_default_bool(userConfig, "BasicWindow", "ShowContextToolbars", true);
+#endif
 	config_set_default_bool(userConfig, "BasicWindow", "StudioModeLabels", true);
 
 	config_set_default_bool(userConfig, "BasicWindow", "VerticalVolControl", false);

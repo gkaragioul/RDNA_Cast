@@ -1668,15 +1668,39 @@ void OBSBasicSettings::ResetEncoders(bool streamOnly)
 #define ENCODER_STR(str) QTStr("Basic.Settings.Output.Simple.Encoder." str)
 
 #ifdef OBS_AMD_LITE
-	if (service_supports_encoder(vcodecs, "av1_texture_amf"))
+	auto setEncoderTooltip = [&](const QString &tip) {
+		int lastIdx = ui->simpleOutStrEncoder->count() - 1;
+		if (lastIdx >= 0)
+			ui->simpleOutStrEncoder->setItemData(lastIdx, tip, Qt::ToolTipRole);
+	};
+	if (service_supports_encoder(vcodecs, "av1_texture_amf")) {
 		ui->simpleOutStrEncoder->addItem(ENCODER_STR("Hardware.AMD.AV1"), QString(SIMPLE_ENCODER_AMD_AV1));
+		setEncoderTooltip(QStringLiteral(
+			"AMD AV1 (AMF) — Best compression efficiency.\n"
+			"Requires RX 7000 (RDNA 3) or RX 9000 (RDNA 4).\n"
+			"Recommended for high-quality streaming and recording."));
+	}
 #ifdef ENABLE_HEVC
-	if (service_supports_encoder(vcodecs, "h265_texture_amf"))
+	if (service_supports_encoder(vcodecs, "h265_texture_amf")) {
 		ui->simpleOutStrEncoder->addItem(ENCODER_STR("Hardware.AMD.HEVC"), QString(SIMPLE_ENCODER_AMD_HEVC));
+		setEncoderTooltip(QStringLiteral(
+			"AMD HEVC (AMF) — Strong compression, broad compatibility.\n"
+			"Supported on RX 5000+ (RDNA 1+). Recommended default for\n"
+			"recording and most streaming services that accept HEVC."));
+	}
 #endif
-	if (service_supports_encoder(vcodecs, "h264_texture_amf"))
+	if (service_supports_encoder(vcodecs, "h264_texture_amf")) {
 		ui->simpleOutStrEncoder->addItem(ENCODER_STR("Hardware.AMD.H264"), QString(SIMPLE_ENCODER_AMD));
+		setEncoderTooltip(QStringLiteral(
+			"AMD H.264 (AMF) — Maximum compatibility.\n"
+			"Use this for Twitch, Facebook, and any service that doesn't\n"
+			"accept HEVC or AV1 from the source."));
+	}
 	ui->simpleOutStrEncoder->addItem(ENCODER_STR("Software"), QString(SIMPLE_ENCODER_X264));
+	setEncoderTooltip(QStringLiteral(
+		"x264 (CPU) — Software fallback. Best quality at the cost of\n"
+		"high CPU usage. Only use if hardware encoders aren't available\n"
+		"or when streaming at very low bitrates."));
 #else
 	ui->simpleOutStrEncoder->addItem(ENCODER_STR("Software"), QString(SIMPLE_ENCODER_X264));
 #ifdef _WIN32
