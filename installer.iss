@@ -3,7 +3,7 @@
 
 #define MyAppName "RDNA Cast"
 #define MyAppNameShort "RDNACast"
-#define MyAppVersion "0.7.1"
+#define MyAppVersion "0.7.2"
 #define MyAppPublisher "George Karagioules"
 #define MyAppExeName "obs64.exe"
 ; AppId retained from GK_OBS_Lite_AMD so existing v0.6.x installs auto-upgrade
