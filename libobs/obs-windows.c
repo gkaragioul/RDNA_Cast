@@ -34,9 +34,13 @@ const char *get_module_extension(void)
 	return ".dll";
 }
 
+#ifdef OBS_AMD_LITE
+static const char *module_bin[] = {"../../rdna-plugins/64bit"};
+static const char *module_data[] = {"../../data/rdna-plugins/%module%"};
+#else
 static const char *module_bin[] = {"../../obs-plugins/64bit"};
-
 static const char *module_data[] = {"../../data/obs-plugins/%module%"};
+#endif
 
 static const int module_patterns_size = sizeof(module_bin) / sizeof(module_bin[0]);
 

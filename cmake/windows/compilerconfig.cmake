@@ -59,11 +59,13 @@ endif()
 set(_obs_msvc_c_options /MP /Zc:__cplusplus /Zc:preprocessor)
 set(_obs_msvc_cpp_options /MP /Zc:__cplusplus /Zc:preprocessor)
 
-# OBS Lite AMD Edition: Zen 3 (5700X3D) + RDNA 4 (9070 XT) optimizations
+# RDNA Cast: Zen 3 (5700X3D) + RDNA 4 (9070 XT) optimizations
+# /wd5287 silences C5287 (enum-type comparison) — fires in stock OBS
+# duplicator-monitor-capture.c, harmless mixing of capture-method enums.
 if(OBS_AMD_LITE)
-  list(APPEND _obs_msvc_c_options /arch:AVX2 /favor:AMD64)
-  list(APPEND _obs_msvc_cpp_options /arch:AVX2 /favor:AMD64)
-  message(STATUS "OBS Lite: AMD Zen 3 optimizations enabled (/arch:AVX2 /favor:AMD64)")
+  list(APPEND _obs_msvc_c_options /arch:AVX2 /favor:AMD64 /wd5286 /wd5287)
+  list(APPEND _obs_msvc_cpp_options /arch:AVX2 /favor:AMD64 /wd5286 /wd5287)
+  message(STATUS "RDNA Cast: AMD Zen 3 optimizations enabled (/arch:AVX2 /favor:AMD64)")
 endif()
 
 if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
