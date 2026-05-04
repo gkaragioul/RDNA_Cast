@@ -2410,6 +2410,23 @@ void OBSBasic::OBSInit()
 			on_resetDocks_triggered(true);
 	}
 
+#ifdef OBS_AMD_LITE
+	/* RDNA Cast v0.7.6 one-shot migration: force-hide the Scene Transitions
+	 * dock and the Source Toolbar context bar for users upgrading from a
+	 * pre-lite build (whose saved DockState/ShowContextToolbars overrides
+	 * the new defaults). User can re-enable via the Docks menu / View ->
+	 * Source Toolbar afterwards; the migration marker prevents re-flipping. */
+	{
+		bool litePass = config_get_bool(App()->GetUserConfig(), "BasicWindow", "RDNALitePassMigrated");
+		if (!litePass) {
+			ui->transitionsDock->setVisible(false);
+			config_set_bool(App()->GetUserConfig(), "BasicWindow", "ShowContextToolbars", false);
+			config_set_bool(App()->GetUserConfig(), "BasicWindow", "RDNALitePassMigrated", true);
+			config_save_safe(App()->GetUserConfig(), "tmp", nullptr);
+		}
+	}
+#endif
+
 	bool pre23Defaults = config_get_bool(App()->GetUserConfig(), "General", "Pre23Defaults");
 	if (pre23Defaults) {
 		bool resetDockLock23 = config_get_bool(App()->GetUserConfig(), "General", "ResetDockLock23");
