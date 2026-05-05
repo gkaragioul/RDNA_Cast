@@ -35,8 +35,15 @@ const char *get_module_extension(void)
 }
 
 #ifdef OBS_AMD_LITE
+/* RDNA Cast: only the plugin BINARY directory was renamed (rdna-plugins/64bit
+ * via OBS_PLUGIN_DESTINATION). Plugin DATA (effects, locale files) is still
+ * installed by CMake to data/obs-plugins/<target>/ — that destination is
+ * hardcoded in cmake/windows/helpers.cmake's target_add_resource(). Looking
+ * for plugin data in data/rdna-plugins/ caused fade_transition.effect and
+ * every plugin's en-US locale to fail to load, producing a black scene
+ * canvas (no transition effect) and untranslated UI strings. */
 static const char *module_bin[] = {"../../rdna-plugins/64bit"};
-static const char *module_data[] = {"../../data/rdna-plugins/%module%"};
+static const char *module_data[] = {"../../data/obs-plugins/%module%"};
 #else
 static const char *module_bin[] = {"../../obs-plugins/64bit"};
 static const char *module_data[] = {"../../data/obs-plugins/%module%"};
