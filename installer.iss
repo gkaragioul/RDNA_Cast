@@ -3,7 +3,7 @@
 
 #define MyAppName "RDNA Cast"
 #define MyAppNameShort "RDNACast"
-#define MyAppVersion "0.7.10"
+#define MyAppVersion "0.7.11"
 #define MyAppPublisher "George Karagioules"
 #define MyAppExeName "obs64.exe"
 ; New AppId for RDNA Cast (separate from legacy GK_OBS_Lite_AMD).
@@ -27,7 +27,7 @@ DisableProgramGroupPage=yes
 UsePreviousAppDir=no
 LicenseFile=installer_assets\LICENSE.txt
 OutputDir=dist-installer
-OutputBaseFilename=RDNACast_Setup_{#MyAppVersion}
+OutputBaseFilename=RDNA_Cast_Setup_{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 SetupIconFile=UI\cmake\windows\obs-studio.ico

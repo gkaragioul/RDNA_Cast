@@ -286,7 +286,7 @@ void GKUpdateDialog::StartDownload()
 	QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
 	QString filename = QUrl(downloadUrl).fileName();
 	if (filename.isEmpty())
-		filename = "RDNACast_Setup.exe";
+		filename = "RDNA_Cast_Setup.exe";
 	installerPath = tempDir + "/" + filename;
 	QFile::remove(installerPath);
 
