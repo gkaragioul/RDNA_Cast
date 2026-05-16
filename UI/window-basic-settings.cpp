@@ -3221,11 +3221,8 @@ void OBSBasicSettings::SaveGeneralSettings()
 			       statusOverlayOpacity->value());
 		statusOverlayChanged = true;
 	}
-	if (statusOverlayChanged) {
+	if (statusOverlayChanged)
 		main->UpdateStatusOverlaySettings();
-		if (statusOverlayEnabled->isChecked())
-			main->FlashStatusOverlay(QStringLiteral("READY"));
-	}
 
 	if (WidgetChanged(ui->systemTrayEnabled)) {
 		config_set_bool(App()->GetUserConfig(), "BasicWindow", "SysTrayEnabled",

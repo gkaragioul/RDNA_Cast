@@ -397,24 +397,11 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	connect(controls, &OBSBasicControls::VirtualCamButtonClicked, this, &OBSBasic::VirtualCamActionTriggered);
 	connect(controls, &OBSBasicControls::VirtualCamConfigButtonClicked, this, &OBSBasic::OpenVirtualCamConfig);
 
-	connect(controls, &OBSBasicControls::StreamButtonClicked, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("ACTION")); });
-	connect(controls, &OBSBasicControls::StartStreamMenuActionClicked, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("ACTION")); });
-	connect(controls, &OBSBasicControls::StopStreamMenuActionClicked, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("ACTION")); });
-	connect(controls, &OBSBasicControls::ForceStopStreamMenuActionClicked, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("ACTION")); });
-	connect(controls, &OBSBasicControls::RecordButtonClicked, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("ACTION")); });
-	connect(controls, &OBSBasicControls::PauseRecordButtonClicked, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("ACTION")); });
-	connect(controls, &OBSBasicControls::ReplayBufferButtonClicked, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("ACTION")); });
 	connect(controls, &OBSBasicControls::SaveReplayBufferButtonClicked, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("ACTION")); });
-	connect(controls, &OBSBasicControls::VirtualCamButtonClicked, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("ACTION")); });
+		[this] {
+			if (ReplayBufferActive())
+				SyncStatusOverlayState(QStringLiteral("SAVE"));
+		});
 
 	connect(controls, &OBSBasicControls::StudioModeButtonClicked, this, &OBSBasic::TogglePreviewProgramMode);
 
@@ -2152,7 +2139,7 @@ void OBSBasic::InitStatusOverlay()
 	connect(this, &OBSBasic::StreamingStopping, this,
 		[this] { SyncStatusOverlayState(QStringLiteral("STOPPING")); });
 	connect(this, &OBSBasic::StreamingStopped, this,
-		[this](bool) { SyncStatusOverlayState(QStringLiteral("LIVE OFF")); });
+		[this](bool) { SyncStatusOverlayState(); });
 
 	connect(this, &OBSBasic::RecordingStarted, this, [this](bool) { SyncStatusOverlayState(QStringLiteral("REC")); });
 	connect(this, &OBSBasic::RecordingPaused, this, [this] { SyncStatusOverlayState(QStringLiteral("PAUSED")); });
@@ -2160,14 +2147,14 @@ void OBSBasic::InitStatusOverlay()
 	connect(this, &OBSBasic::RecordingStopping, this,
 		[this] { SyncStatusOverlayState(QStringLiteral("STOPPING")); });
 	connect(this, &OBSBasic::RecordingStopped, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("REC OFF")); });
+		[this] { SyncStatusOverlayState(); });
 
 	connect(this, &OBSBasic::ReplayBufStarted, this,
 		[this] { SyncStatusOverlayState(QStringLiteral("REPLAY")); });
 	connect(this, &OBSBasic::ReplayBufStopping, this,
 		[this] { SyncStatusOverlayState(QStringLiteral("STOPPING")); });
 	connect(this, &OBSBasic::ReplayBufStopped, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("REPLAY OFF")); });
+		[this] { SyncStatusOverlayState(); });
 
 	UpdateStatusOverlaySettings();
 }
@@ -2184,11 +2171,6 @@ void OBSBasic::UpdateStatusOverlaySettings()
 	statusOverlay->SetOverlayOpacity((int)config_get_int(config, "BasicWindow", "StatusOverlayOpacity"));
 
 	SyncStatusOverlayState();
-}
-
-void OBSBasic::FlashStatusOverlay(const QString &flashText)
-{
-	SyncStatusOverlayState(flashText);
 }
 
 void OBSBasic::SyncStatusOverlayState(const QString &flashText)
@@ -2878,9 +2860,6 @@ void OBSBasic::InitHotkeys()
 
 void OBSBasic::ProcessHotkey(obs_hotkey_id id, bool pressed)
 {
-	if (pressed && statusOverlay)
-		statusOverlay->FlashAction(QStringLiteral("HOTKEY"));
-
 	obs_hotkey_trigger_routed_callback(id, pressed);
 }
 

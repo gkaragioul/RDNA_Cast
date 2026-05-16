@@ -47,6 +47,7 @@ protected:
 private:
 	QString StatusText() const;
 	QColor StatusColor() const;
+	bool HasActiveStatus() const;
 	void Reposition();
 	void ApplyCaptureExclusionProperty();
 

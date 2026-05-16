@@ -157,7 +157,7 @@ void OBSStatusOverlay::FlashAction(const QString &text)
 
 void OBSStatusOverlay::RefreshVisibility()
 {
-	const bool shouldShow = enabled && (!StatusText().isEmpty() || flashTimer.isActive());
+	const bool shouldShow = enabled && HasActiveStatus();
 
 	if (shouldShow) {
 		Reposition();
@@ -232,6 +232,11 @@ QColor OBSStatusOverlay::StatusColor() const
 		return QColor(75, 195, 255);
 
 	return QColor(115, 209, 116);
+}
+
+bool OBSStatusOverlay::HasActiveStatus() const
+{
+	return streaming || recording || replayBuffer;
 }
 
 void OBSStatusOverlay::Reposition()
