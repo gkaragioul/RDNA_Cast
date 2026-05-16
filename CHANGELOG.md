@@ -2,6 +2,12 @@
 
 All notable changes to this project. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.21] — 2026-05-16
+
+### Removed
+- Removed the status overlay/HUD feature entirely after testing showed external overlay windows could still cause game lag on the target system.
+- Removed overlay settings, overlay window code, documentation screenshot, config defaults, and replay-save overlay notifications.
+
 ## [0.7.20] — 2026-05-16
 
 ### Changed
@@ -119,6 +125,7 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 - Close-to-tray behavior
 - Inno Setup installer with custom branding
 
+[0.7.21]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.21
 [0.7.20]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.20
 [0.7.19]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.19
 [0.7.18]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.18

@@ -49,7 +49,6 @@
 #include "visibility-item-widget.hpp"
 #include "item-widget-helpers.hpp"
 #include "basic-controls.hpp"
-#include "status-overlay.hpp"
 #include "window-basic-settings.hpp"
 #include "window-namedialog.hpp"
 #include "window-basic-auto-config.hpp"
@@ -368,8 +367,6 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 			this->recordingPaused = false;
 		},
 		Qt::DirectConnection);
-
-	InitStatusOverlay();
 
 	/* Add controls dock */
 	OBSBasicControls *controls = new OBSBasicControls(this);
@@ -2121,70 +2118,6 @@ void OBSBasic::ResetOutputs()
 	} else {
 		outputHandler->Update();
 	}
-}
-
-void OBSBasic::InitStatusOverlay()
-{
-	statusOverlay = std::make_unique<OBSStatusOverlay>(this);
-
-	connect(this, &OBSBasic::StreamingStarting, this,
-		[this](bool) { SyncStatusOverlayState(QStringLiteral("STARTING")); });
-	connect(this, &OBSBasic::StreamingStarted, this, [this](bool) { SyncStatusOverlayState(QStringLiteral("LIVE")); });
-	connect(this, &OBSBasic::StreamingStopping, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("STOPPING")); });
-	connect(this, &OBSBasic::StreamingStopped, this,
-		[this](bool) { SyncStatusOverlayState(); });
-
-	connect(this, &OBSBasic::RecordingStarted, this, [this](bool) { SyncStatusOverlayState(QStringLiteral("REC")); });
-	connect(this, &OBSBasic::RecordingPaused, this, [this] { SyncStatusOverlayState(QStringLiteral("PAUSED")); });
-	connect(this, &OBSBasic::RecordingUnpaused, this, [this] { SyncStatusOverlayState(QStringLiteral("REC")); });
-	connect(this, &OBSBasic::RecordingStopping, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("STOPPING")); });
-	connect(this, &OBSBasic::RecordingStopped, this,
-		[this] { SyncStatusOverlayState(); });
-
-	connect(this, &OBSBasic::ReplayBufStarted, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("REPLAY")); });
-	connect(this, &OBSBasic::ReplayBufStopping, this,
-		[this] { SyncStatusOverlayState(QStringLiteral("STOPPING")); });
-	connect(this, &OBSBasic::ReplayBufStopped, this,
-		[this] { SyncStatusOverlayState(); });
-
-	UpdateStatusOverlaySettings();
-}
-
-void OBSBasic::UpdateStatusOverlaySettings()
-{
-	if (!statusOverlay)
-		return;
-
-	config_t *config = App()->GetUserConfig();
-	statusOverlay->SetOverlayEnabled(config_get_bool(config, "BasicWindow", "StatusOverlayEnabled"));
-	statusOverlay->SetOverlayPosition(
-		StatusOverlayPositionFromString(config_get_string(config, "BasicWindow", "StatusOverlayPosition")));
-
-	SyncStatusOverlayState();
-}
-
-void OBSBasic::SyncStatusOverlayState(const QString &flashText)
-{
-	if (!statusOverlay)
-		return;
-
-	const bool streamingActive = outputHandler && outputHandler->streamingActive;
-	const bool recordingActive = outputHandler && outputHandler->recordingActive;
-	const bool replayBufferActive = outputHandler && outputHandler->replayBufferActive;
-
-	statusOverlay->SetStreaming(streamingActive);
-	statusOverlay->SetRecording(recordingActive);
-	statusOverlay->SetRecordingPaused(recordingPaused);
-	statusOverlay->SetReplayBuffer(replayBufferActive);
-
-	if (!flashText.isEmpty())
-		statusOverlay->FlashAction(flashText);
-
-	if (statusOverlay->isVisible() && statusOverlay->windowHandle())
-		SetDisplayAffinity(statusOverlay->windowHandle());
 }
 
 #define STARTUP_SEPARATOR "==== Startup complete ==============================================="
@@ -7610,8 +7543,6 @@ void OBSBasic::ReplayBufferSaved()
 	OnEvent(OBS_FRONTEND_EVENT_REPLAY_BUFFER_SAVED);
 
 #ifdef OBS_AMD_LITE
-	SyncStatusOverlayState(QStringLiteral("SAVE"));
-
 	if (!isVisible()) {
 		QString filename = QFileInfo(QT_UTF8(path.c_str())).fileName();
 		SysTrayNotify(QStringLiteral("Replay saved: %1").arg(filename), QSystemTrayIcon::Information);

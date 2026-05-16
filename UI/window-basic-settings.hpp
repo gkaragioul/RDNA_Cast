@@ -160,9 +160,6 @@ private:
 	QPointer<QRadioButton> vodTrack[MAX_AUDIO_MIXES];
 
 	QIcon hotkeyConflictIcon;
-	QCheckBox *statusOverlayEnabled = nullptr;
-	QComboBox *statusOverlayPosition = nullptr;
-
 	void SaveCombo(QComboBox *widget, const char *section, const char *value);
 	void SaveComboData(QComboBox *widget, const char *section, const char *value);
 	void SaveCheckBox(QAbstractButton *widget, const char *section, const char *value, bool invert = false);
@@ -233,8 +230,6 @@ private:
 	OBSPropertiesView *CreateEncoderPropertyView(const char *encoder, const char *path, bool changed = false);
 
 	/* general */
-	void InitStatusOverlaySettingsUi();
-	void SetStatusOverlayControlsEnabled(bool enabled);
 	void LoadLanguageList();
 	void LoadThemeList(bool firstLoad);
 	void LoadBranchesList();
