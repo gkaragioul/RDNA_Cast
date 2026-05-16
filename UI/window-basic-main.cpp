@@ -2172,10 +2172,14 @@ void OBSBasic::SyncStatusOverlayState(const QString &flashText)
 	if (!statusOverlay)
 		return;
 
-	statusOverlay->SetStreaming(StreamingActive());
-	statusOverlay->SetRecording(RecordingActive());
+	const bool streamingActive = outputHandler && outputHandler->streamingActive;
+	const bool recordingActive = outputHandler && outputHandler->recordingActive;
+	const bool replayBufferActive = outputHandler && outputHandler->replayBufferActive;
+
+	statusOverlay->SetStreaming(streamingActive);
+	statusOverlay->SetRecording(recordingActive);
 	statusOverlay->SetRecordingPaused(recordingPaused);
-	statusOverlay->SetReplayBuffer(ReplayBufferActive());
+	statusOverlay->SetReplayBuffer(replayBufferActive);
 
 	if (!flashText.isEmpty())
 		statusOverlay->FlashAction(flashText);
