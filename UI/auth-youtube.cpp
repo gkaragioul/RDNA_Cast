@@ -1,8 +1,14 @@
 #include "moc_auth-youtube.cpp"
 
+#include <QDialogButtonBox>
+#include <QFormLayout>
+#include <QLabel>
+#include <QLineEdit>
 #include <iostream>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QThread>
+#include <QVBoxLayout>
 #include <vector>
 #include <QDesktopServices>
 #include <QHBoxLayout>
@@ -58,6 +64,84 @@ static void DeleteCookies()
 		panel_cookies->DeleteCookies("youtube.com", "");
 		panel_cookies->DeleteCookies("google.com", "");
 	}
+}
+
+static bool GetBuiltInYouTubeOAuthCredentials(std::string &clientid, std::string &secret)
+{
+	clientid = YOUTUBE_CLIENTID;
+	secret = YOUTUBE_SECRET;
+
+	if (clientid.empty() || secret.empty())
+		return false;
+
+	deobfuscate_str(&clientid[0], YOUTUBE_CLIENTID_HASH);
+	deobfuscate_str(&secret[0], YOUTUBE_SECRET_HASH);
+
+	return !clientid.empty() && !secret.empty();
+}
+
+bool GetYouTubeOAuthCredentials(QWidget *parent, std::string &clientid, std::string &secret, bool prompt)
+{
+	if (GetBuiltInYouTubeOAuthCredentials(clientid, secret))
+		return true;
+
+	config_t *config = OBSBasic::Get()->Config();
+	const char *configuredClientId = config_get_string(config, "YouTubeOAuth", "ClientID");
+	const char *configuredSecret = config_get_string(config, "YouTubeOAuth", "ClientSecret");
+	clientid = configuredClientId ? configuredClientId : "";
+	secret = configuredSecret ? configuredSecret : "";
+
+	if (!clientid.empty() && !secret.empty())
+		return true;
+
+	if (!prompt)
+		return false;
+
+	QDialog dialog(parent);
+	dialog.setWindowTitle("YouTube OAuth");
+
+	auto *layout = new QVBoxLayout(&dialog);
+	auto *message = new QLabel(
+		"RDNA Cast was built without a shared YouTube OAuth app.\n\n"
+		"Enter your own Google Cloud OAuth Desktop client credentials to connect YouTube. "
+		"These are app credentials, not your Google account password, and are stored only on this PC.");
+	message->setWordWrap(true);
+	layout->addWidget(message);
+
+	auto *form = new QFormLayout();
+	auto *clientIdEdit = new QLineEdit(&dialog);
+	auto *secretEdit = new QLineEdit(&dialog);
+	secretEdit->setEchoMode(QLineEdit::Password);
+
+	form->addRow("Client ID", clientIdEdit);
+	form->addRow("Client secret", secretEdit);
+	layout->addLayout(form);
+
+	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+	buttons->button(QDialogButtonBox::Ok)->setEnabled(false);
+	layout->addWidget(buttons);
+
+	auto updateOkButton = [buttons, clientIdEdit, secretEdit]() {
+		buttons->button(QDialogButtonBox::Ok)
+			->setEnabled(!clientIdEdit->text().trimmed().isEmpty() &&
+				     !secretEdit->text().trimmed().isEmpty());
+	};
+	QObject::connect(clientIdEdit, &QLineEdit::textChanged, &dialog, updateOkButton);
+	QObject::connect(secretEdit, &QLineEdit::textChanged, &dialog, updateOkButton);
+	QObject::connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+	QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+	if (dialog.exec() != QDialog::Accepted)
+		return false;
+
+	clientid = QT_TO_UTF8(clientIdEdit->text().trimmed());
+	secret = QT_TO_UTF8(secretEdit->text().trimmed());
+
+	config_set_string(config, "YouTubeOAuth", "ClientID", clientid.c_str());
+	config_set_string(config, "YouTubeOAuth", "ClientSecret", secret.c_str());
+	config_save_safe(config, "tmp", nullptr);
+
+	return !clientid.empty() && !secret.empty();
 }
 
 void RegisterYoutubeAuth()
@@ -247,10 +331,10 @@ std::shared_ptr<Auth> YoutubeAuth::Login(QWidget *owner, const std::string &serv
 	dlg.setWindowFlags(dlg.windowFlags() & ~Qt::WindowCloseButtonHint);
 	dlg.setWindowTitle(QTStr("YouTube.Auth.WaitingAuth.Title"));
 
-	std::string clientid = YOUTUBE_CLIENTID;
-	std::string secret = YOUTUBE_SECRET;
-	deobfuscate_str(&clientid[0], YOUTUBE_CLIENTID_HASH);
-	deobfuscate_str(&secret[0], YOUTUBE_SECRET_HASH);
+	std::string clientid;
+	std::string secret;
+	if (!GetYouTubeOAuthCredentials(owner, clientid, secret, true))
+		return nullptr;
 
 	QString state;
 	state = auth->GenerateState();

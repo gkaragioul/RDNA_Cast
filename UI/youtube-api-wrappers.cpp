@@ -107,10 +107,12 @@ bool YoutubeApiWrappers::UpdateAccessToken()
 		return false;
 	}
 
-	std::string clientid = YOUTUBE_CLIENTID;
-	std::string secret = YOUTUBE_SECRET;
-	deobfuscate_str(&clientid[0], YOUTUBE_CLIENTID_HASH);
-	deobfuscate_str(&secret[0], YOUTUBE_SECRET_HASH);
+	std::string clientid;
+	std::string secret;
+	if (!GetYouTubeOAuthCredentials(nullptr, clientid, secret, false)) {
+		blog(LOG_WARNING, "YouTube OAuth credentials are not configured; cannot refresh access token.");
+		return false;
+	}
 
 	std::string r_token = QUrl::toPercentEncoding(refresh_token.c_str()).toStdString();
 	const QString url = YOUTUBE_LIVE_TOKEN_URL;

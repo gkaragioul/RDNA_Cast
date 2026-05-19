@@ -7,6 +7,10 @@
 
 #include "auth-oauth.hpp"
 
+class QWidget;
+
+bool GetYouTubeOAuthCredentials(QWidget *parent, std::string &clientid, std::string &secret, bool prompt);
+
 #ifdef BROWSER_AVAILABLE
 #include "window-dock-browser.hpp"
 #include <QHBoxLayout>

@@ -2,6 +2,12 @@
 
 All notable changes to this project. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.23] - 2026-05-19
+
+### Changed
+- Restored YouTube account login in AMD Lite builds without embedding any Google account credentials.
+- Added a local-only YouTube OAuth client credential prompt for builds that do not ship with shared app OAuth credentials.
+
 ## [0.7.22] - 2026-05-19
 
 ### Changed
@@ -132,6 +138,7 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 - Close-to-tray behavior
 - Inno Setup installer with custom branding
 
+[0.7.23]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.23
 [0.7.22]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.22
 [0.7.21]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.21
 [0.7.20]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.20
