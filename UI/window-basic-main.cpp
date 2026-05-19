@@ -400,6 +400,8 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 
 #ifdef OBS_AMD_LITE
 	connect(controls, &OBSBasicControls::ExitButtonClicked, this, &OBSBasic::ForceClose);
+	disconnect(ui->actionE_xit, nullptr, this, nullptr);
+	connect(ui->actionE_xit, &QAction::triggered, this, &OBSBasic::ForceClose);
 #else
 	connect(controls, &OBSBasicControls::ExitButtonClicked, this, &QMainWindow::close);
 #endif
@@ -2415,6 +2417,18 @@ void OBSBasic::OBSInit()
 	}
 
 #ifdef OBS_AMD_LITE
+	/* RDNA Cast v0.7.25 one-shot recovery: users who repeatedly closed to
+	 * tray instead of exiting could save a distorted dock layout. Reset once
+	 * so startup returns to the known-good lite workspace. */
+	{
+		bool dockRecovery = config_get_bool(App()->GetUserConfig(), "BasicWindow", "RDNALiteDockRecovery025");
+		if (!dockRecovery) {
+			on_resetDocks_triggered(true);
+			config_set_bool(App()->GetUserConfig(), "BasicWindow", "RDNALiteDockRecovery025", true);
+			config_save_safe(App()->GetUserConfig(), "tmp", nullptr);
+		}
+	}
+
 	/* RDNA Cast v0.7.6 one-shot migration: force-hide the Scene Transitions
 	 * dock and the Source Toolbar context bar for users upgrading from a
 	 * pre-lite build (whose saved DockState/ShowContextToolbars overrides

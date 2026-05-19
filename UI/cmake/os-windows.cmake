@@ -40,7 +40,7 @@ target_sources(obs-studio PRIVATE system-info-windows.cpp)
 
 target_link_libraries(
   obs-studio
-  PRIVATE crypt32 OBS::blake2 OBS::w32-pthreads MbedTLS::mbedtls nlohmann_json::nlohmann_json Detours::Detours
+  PRIVATE crypt32 pdh OBS::blake2 OBS::w32-pthreads MbedTLS::mbedtls nlohmann_json::nlohmann_json Detours::Detours
 )
 
 target_compile_definitions(obs-studio PRIVATE PSAPI_VERSION=2)

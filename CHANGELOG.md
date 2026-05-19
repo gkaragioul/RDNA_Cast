@@ -2,6 +2,14 @@
 
 All notable changes to this project. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.25] - 2026-05-20
+
+### Fixed
+- File > Exit now uses the RDNA Cast force-close path instead of close-to-tray, so explicit exit commands shut the app down.
+- Added a one-time dock layout recovery to reset distorted saved layouts caused by repeated close-to-tray attempts.
+- Stream and recording timers now use actual elapsed monotonic time instead of status refresh ticks.
+- VRAM usage now prefers Windows GPU Adapter Memory counters for system-wide dedicated GPU memory usage.
+
 ## [0.7.24] - 2026-05-19
 
 ### Added
@@ -144,6 +152,7 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 - Close-to-tray behavior
 - Inno Setup installer with custom branding
 
+[0.7.25]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.25
 [0.7.24]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.24
 [0.7.23]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.23
 [0.7.22]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.22

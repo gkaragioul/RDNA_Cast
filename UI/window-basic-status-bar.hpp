@@ -41,6 +41,10 @@ private:
 	int retries = 0;
 	int totalStreamSeconds = 0;
 	int totalRecordSeconds = 0;
+	uint64_t streamStartTimeNs = 0;
+	uint64_t recordStartTimeNs = 0;
+	uint64_t recordPauseStartTimeNs = 0;
+	uint64_t recordPausedTimeNs = 0;
 
 	int reconnectTimeout = 0;
 
@@ -84,6 +88,7 @@ private:
 	void UpdateBandwidth();
 	void UpdateStreamTime();
 	void UpdateRecordTime();
+	QString FormatElapsed(uint64_t elapsedNs) const;
 	void UpdateRecordTimeLabel();
 	void UpdateDroppedFrames();
 

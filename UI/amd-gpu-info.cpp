@@ -3,12 +3,17 @@
 #include "amd-gpu-info.hpp"
 #include <dxgi1_4.h>
 #include <d3d11.h>
+#include <pdh.h>
+#include <pdhmsg.h>
 #include <wrl/client.h>
 #include <util/base.h>
+#include <vector>
 
 #include "window-basic-main.hpp"
 
 using Microsoft::WRL::ComPtr;
+
+#pragma comment(lib, "pdh.lib")
 
 /* ============================================================
  * RDNA Generation Detection by PCI Device ID
@@ -163,6 +168,57 @@ typedef struct _D3DKMT_QUERYSTATISTICS_COUNTER {
 	ULONGLONG Bytes;
 } D3DKMT_QUERYSTATISTICS_COUNTER;
 
+static bool QueryDedicatedGPUUsageFromPDH(double &usedMB)
+{
+	HQUERY query = nullptr;
+	HCOUNTER counter = nullptr;
+	PDH_STATUS status = PdhOpenQueryW(nullptr, 0, &query);
+	if (status != ERROR_SUCCESS)
+		return false;
+
+	status = PdhAddEnglishCounterW(query, L"\\GPU Adapter Memory(*)\\Dedicated Usage", 0, &counter);
+	if (status != ERROR_SUCCESS) {
+		PdhCloseQuery(query);
+		return false;
+	}
+
+	status = PdhCollectQueryData(query);
+	if (status != ERROR_SUCCESS) {
+		PdhCloseQuery(query);
+		return false;
+	}
+
+	DWORD bufferSize = 0;
+	DWORD itemCount = 0;
+	status = PdhGetFormattedCounterArrayW(counter, PDH_FMT_LARGE, &bufferSize, &itemCount, nullptr);
+	if (status != PDH_MORE_DATA || bufferSize == 0 || itemCount == 0) {
+		PdhCloseQuery(query);
+		return false;
+	}
+
+	std::vector<BYTE> buffer(bufferSize);
+	auto items = reinterpret_cast<PPDH_FMT_COUNTERVALUE_ITEM_W>(buffer.data());
+	status = PdhGetFormattedCounterArrayW(counter, PDH_FMT_LARGE, &bufferSize, &itemCount, items);
+	if (status != ERROR_SUCCESS) {
+		PdhCloseQuery(query);
+		return false;
+	}
+
+	int64_t dedicatedBytes = 0;
+	for (DWORD i = 0; i < itemCount; i++) {
+		if (items[i].FmtValue.CStatus == ERROR_SUCCESS && items[i].FmtValue.largeValue > 0)
+			dedicatedBytes += items[i].FmtValue.largeValue;
+	}
+
+	PdhCloseQuery(query);
+
+	if (dedicatedBytes <= 0)
+		return false;
+
+	usedMB = double(dedicatedBytes) / (1024.0 * 1024.0);
+	return true;
+}
+
 AMDGPUStats QueryAMDGPUStats()
 {
 	AMDGPUStats stats;
@@ -192,6 +248,10 @@ AMDGPUStats QueryAMDGPUStats()
 				stats.vramUsedMB = memInfo.CurrentUsage / (1024.0 * 1024.0);
 			}
 		}
+
+		double pdhUsedMB = 0.0;
+		if (QueryDedicatedGPUUsageFromPDH(pdhUsedMB))
+			stats.vramUsedMB = pdhUsedMB;
 
 		stats.valid = true;
 		adapter.Reset();

@@ -78,11 +78,7 @@ void OBSBasicStatusBar::Activate()
 		startSkippedFrameCount = skipped;
 		startTotalFrameCount = total;
 
-#ifdef OBS_AMD_LITE
-		refreshTimer->start(3000);
-#else
 		refreshTimer->start(1000);
-#endif
 		active = true;
 
 		if (streamOutput) {
@@ -281,15 +277,8 @@ void OBSBasicStatusBar::UpdateCurrentFPS()
 
 void OBSBasicStatusBar::UpdateStreamTime()
 {
-	totalStreamSeconds++;
-
-	int seconds = totalStreamSeconds % 60;
-	int totalMinutes = totalStreamSeconds / 60;
-	int minutes = totalMinutes % 60;
-	int hours = totalMinutes / 60;
-
-	QString text = QString::asprintf("%02d:%02d:%02d", hours, minutes, seconds);
-	statusWidget->ui->streamTime->setText(text);
+	if (streamStartTimeNs)
+		statusWidget->ui->streamTime->setText(FormatElapsed(os_gettime_ns() - streamStartTimeNs));
 	if (streamOutput && !statusWidget->ui->streamTime->isEnabled())
 		statusWidget->ui->streamTime->setDisabled(false);
 
@@ -323,8 +312,6 @@ void OBSBasicStatusBar::UpdateRecordTime()
 	bool paused = os_atomic_load_bool(&recording_paused);
 
 	if (!paused) {
-		totalRecordSeconds++;
-
 		if (recordOutput && !statusWidget->ui->recordTime->isEnabled())
 			statusWidget->ui->recordTime->setDisabled(false);
 	} else {
@@ -337,14 +324,29 @@ void OBSBasicStatusBar::UpdateRecordTime()
 	UpdateRecordTimeLabel();
 }
 
-void OBSBasicStatusBar::UpdateRecordTimeLabel()
+QString OBSBasicStatusBar::FormatElapsed(uint64_t elapsedNs) const
 {
-	int seconds = totalRecordSeconds % 60;
-	int totalMinutes = totalRecordSeconds / 60;
+	uint64_t elapsedSeconds = elapsedNs / 1000000000ULL;
+	int seconds = int(elapsedSeconds % 60);
+	int totalMinutes = int(elapsedSeconds / 60);
 	int minutes = totalMinutes % 60;
 	int hours = totalMinutes / 60;
 
-	QString text = QString::asprintf("%02d:%02d:%02d", hours, minutes, seconds);
+	return QString::asprintf("%02d:%02d:%02d", hours, minutes, seconds);
+}
+
+void OBSBasicStatusBar::UpdateRecordTimeLabel()
+{
+	uint64_t elapsedNs = 0;
+	if (recordStartTimeNs) {
+		uint64_t pausedNs = recordPausedTimeNs;
+		if (os_atomic_load_bool(&recording_paused) && recordPauseStartTimeNs)
+			pausedNs += os_gettime_ns() - recordPauseStartTimeNs;
+		uint64_t rawElapsedNs = os_gettime_ns() - recordStartTimeNs;
+		elapsedNs = pausedNs < rawElapsedNs ? rawElapsedNs - pausedNs : 0;
+	}
+
+	QString text = FormatElapsed(elapsedNs);
 	if (os_atomic_load_bool(&recording_paused)) {
 		text += QStringLiteral(" (PAUSED)");
 	}
@@ -526,6 +528,7 @@ void OBSBasicStatusBar::StreamDelayStarting(int sec)
 
 	OBSOutputAutoRelease output = obs_frontend_get_streaming_output();
 	streamOutput = OBSGetWeakRef(output);
+	streamStartTimeNs = os_gettime_ns();
 
 	delaySecTotal = delaySecStarting = sec;
 	UpdateDelayMsg();
@@ -541,6 +544,7 @@ void OBSBasicStatusBar::StreamDelayStopping(int sec)
 void OBSBasicStatusBar::StreamStarted(obs_output_t *output)
 {
 	streamOutput = OBSGetWeakRef(output);
+	streamStartTimeNs = os_gettime_ns();
 
 	streamSigs.emplace_back(obs_output_get_signal_handler(output), "reconnect", OBSOutputReconnect, this);
 	streamSigs.emplace_back(obs_output_get_signal_handler(output), "reconnect_success", OBSOutputReconnectSuccess,
@@ -559,6 +563,7 @@ void OBSBasicStatusBar::StreamStopped()
 
 		ReconnectClear();
 		streamOutput = nullptr;
+		streamStartTimeNs = 0;
 		clearMessage();
 		Deactivate();
 	}
@@ -567,12 +572,18 @@ void OBSBasicStatusBar::StreamStopped()
 void OBSBasicStatusBar::RecordingStarted(obs_output_t *output)
 {
 	recordOutput = OBSGetWeakRef(output);
+	recordStartTimeNs = os_gettime_ns();
+	recordPauseStartTimeNs = 0;
+	recordPausedTimeNs = 0;
 	Activate();
 }
 
 void OBSBasicStatusBar::RecordingStopped()
 {
 	recordOutput = nullptr;
+	recordStartTimeNs = 0;
+	recordPauseStartTimeNs = 0;
+	recordPausedTimeNs = 0;
 	Deactivate();
 }
 
@@ -581,6 +592,7 @@ void OBSBasicStatusBar::RecordingPaused()
 	if (recordOutput) {
 		statusWidget->ui->recordIcon->setPixmap(recordingPausePixmap);
 		streamPauseIconToggle = true;
+		recordPauseStartTimeNs = os_gettime_ns();
 	}
 
 	UpdateRecordTimeLabel();
@@ -590,6 +602,9 @@ void OBSBasicStatusBar::RecordingUnpaused()
 {
 	if (recordOutput) {
 		statusWidget->ui->recordIcon->setPixmap(recordingActivePixmap);
+		if (recordPauseStartTimeNs)
+			recordPausedTimeNs += os_gettime_ns() - recordPauseStartTimeNs;
+		recordPauseStartTimeNs = 0;
 	}
 
 	UpdateRecordTimeLabel();
