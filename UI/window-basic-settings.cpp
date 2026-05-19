@@ -34,7 +34,13 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QDir>
 #include <QDirIterator>
+#include <QPushButton>
+#include <QSettings>
+#include <QStorageInfo>
+#include <QSysInfo>
+#include <QThread>
 #include <QVariant>
 #include <QTreeView>
 #include <QScreen>
@@ -51,6 +57,7 @@
 #include "platform.hpp"
 #include "properties-view.hpp"
 #include "window-basic-main.hpp"
+#include "amd-gpu-info.hpp"
 #include "moc_window-basic-settings.cpp"
 #include "window-basic-main-outputs.hpp"
 #include "window-projector.hpp"
@@ -62,6 +69,10 @@
 #include <util/platform.h>
 #include <util/dstr.hpp>
 #include "ui-config.h"
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 using namespace std;
 
@@ -179,6 +190,76 @@ static inline bool SetInvalidValue(QComboBox *combo, const char *name, const cha
 
 	combo->setCurrentIndex(0);
 	return true;
+}
+
+bool EncoderAvailable(const char *encoder);
+
+static QString FormatGiB(uint64_t bytes)
+{
+	return QString::number(bytes / 1024.0 / 1024.0 / 1024.0, 'f', 1) + " GB";
+}
+
+static QString GetCPUName()
+{
+#ifdef _WIN32
+	QSettings cpuKey("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+			 QSettings::NativeFormat);
+	QString name = cpuKey.value("ProcessorNameString").toString().trimmed();
+	if (!name.isEmpty())
+		return name;
+#endif
+	return QSysInfo::prettyProductName();
+}
+
+static int GetLogicalProcessorCount()
+{
+#ifdef _WIN32
+	SYSTEM_INFO info = {};
+	GetNativeSystemInfo(&info);
+	return int(info.dwNumberOfProcessors);
+#else
+	return QThread::idealThreadCount();
+#endif
+}
+
+static uint64_t GetPhysicalMemoryBytes()
+{
+#ifdef _WIN32
+	MEMORYSTATUSEX memory = {};
+	memory.dwLength = sizeof(memory);
+	if (GlobalMemoryStatusEx(&memory))
+		return memory.ullTotalPhys;
+#endif
+	return 0;
+}
+
+static QString GetRecordingDriveFree(const QString &path)
+{
+	QStorageInfo storage(path.isEmpty() ? QDir::homePath() : path);
+	if (!storage.isValid() || !storage.isReady())
+		return "Unknown";
+
+	return FormatGiB(storage.bytesAvailable()) + " free";
+}
+
+static int RecommendedVideoBitrate(uint32_t cx, uint32_t cy, double fps)
+{
+	const uint64_t pixels = uint64_t(cx) * uint64_t(cy);
+
+	if (pixels >= uint64_t(3840) * 2160)
+		return fps > 30.0 ? 30000 : 20000;
+	if (pixels >= uint64_t(2560) * 1440)
+		return fps > 30.0 ? 18000 : 12000;
+	if (pixels >= uint64_t(1920) * 1080)
+		return fps > 30.0 ? 9000 : 6000;
+	if (pixels >= uint64_t(1280) * 720)
+		return fps > 30.0 ? 5000 : 3500;
+	return 2500;
+}
+
+static bool ComboHasValue(QComboBox *combo, const char *value)
+{
+	return combo->findData(QString(value)) != -1;
 }
 
 static inline QString GetComboData(QComboBox *combo)
@@ -752,6 +833,7 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 	hotkeyUnregistered.Connect(obs_get_signal_handler(), "hotkey_unregister", ReloadHotkeysIgnore, this);
 
 	FillSimpleRecordingValues();
+	InitOutputAutoTune();
 	if (obs_audio_monitoring_available())
 		FillAudioMonitoringDevices();
 
@@ -1859,6 +1941,7 @@ void OBSBasicSettings::LoadSimpleOutputSettings()
 	ui->simpleRBMegsMax->setValue(rbSize);
 
 	SimpleStreamingEncoderChanged();
+	UpdateOutputAutoTuneInfo();
 }
 
 static inline QString makeFormatToolTip()
@@ -2263,6 +2346,9 @@ void OBSBasicSettings::LoadOutputSettings()
 	LoadAdvOutputFFmpegSettings();
 	LoadAdvOutputAudioSettings();
 
+	if (outputAutoTuneButton)
+		outputAutoTuneButton->setEnabled(true);
+
 	if (obs_video_active()) {
 		ui->outputMode->setEnabled(false);
 		ui->outputModeLabel->setEnabled(false);
@@ -2277,6 +2363,8 @@ void OBSBasicSettings::LoadOutputSettings()
 		ui->advOutRecTypeContainer->setEnabled(false);
 		ui->advOutputAudioTracksTab->setEnabled(false);
 		ui->advNetworkGroupBox->setEnabled(false);
+		if (outputAutoTuneButton)
+			outputAutoTuneButton->setEnabled(false);
 	}
 
 	loading = false;
@@ -2313,6 +2401,183 @@ void OBSBasicSettings::SetAdvOutputFFmpegEnablement(FFmpegCodecType encoderType,
 static inline void LoadListValue(QComboBox *widget, const char *text, const char *val)
 {
 	widget->addItem(QT_UTF8(text), QT_UTF8(val));
+}
+
+void OBSBasicSettings::InitOutputAutoTune()
+{
+	QGroupBox *group = new QGroupBox("PC Specs & Auto Optimize", ui->scrollAreaWidgetContents_3);
+	group->setObjectName("outputAutoTuneGroupBox");
+
+	QVBoxLayout *layout = new QVBoxLayout(group);
+	layout->setContentsMargins(9, 14, 9, 9);
+	layout->setSpacing(10);
+
+	outputAutoTuneSpecs = new QLabel(group);
+	outputAutoTuneSpecs->setWordWrap(true);
+	outputAutoTuneSpecs->setTextInteractionFlags(Qt::TextSelectableByMouse);
+	outputAutoTuneSpecs->setStyleSheet("color: #c9c9c9;");
+	layout->addWidget(outputAutoTuneSpecs);
+
+	outputAutoTuneRecommendation = new QLabel(group);
+	outputAutoTuneRecommendation->setWordWrap(true);
+	outputAutoTuneRecommendation->setStyleSheet("color: #a9a9a9;");
+	layout->addWidget(outputAutoTuneRecommendation);
+
+	QHBoxLayout *buttonLayout = new QHBoxLayout();
+	buttonLayout->setContentsMargins(0, 0, 0, 0);
+	buttonLayout->addStretch();
+
+	outputAutoTuneButton = new QPushButton("Apply Recommended Settings", group);
+	outputAutoTuneButton->setToolTip("Sets low-impact streaming and recording options for this PC.");
+	buttonLayout->addWidget(outputAutoTuneButton);
+	layout->addLayout(buttonLayout);
+
+	ui->verticalLayout_52->insertWidget(0, group);
+
+	connect(outputAutoTuneButton, &QPushButton::clicked, this, &OBSBasicSettings::ApplyOutputAutoTune);
+	connect(ui->simpleOutputPath, &QLineEdit::textChanged, this, &OBSBasicSettings::UpdateOutputAutoTuneInfo);
+}
+
+void OBSBasicSettings::UpdateOutputAutoTuneInfo()
+{
+	if (!outputAutoTuneSpecs || !outputAutoTuneRecommendation)
+		return;
+
+	uint32_t fpsNum = 0;
+	uint32_t fpsDen = 1;
+	main->GetConfigFPS(fpsNum, fpsDen);
+	const double fps = fpsDen ? double(fpsNum) / double(fpsDen) : 0.0;
+	const uint32_t cx = config_get_uint(main->Config(), "Video", "OutputCX");
+	const uint32_t cy = config_get_uint(main->Config(), "Video", "OutputCY");
+	const int bitrate = RecommendedVideoBitrate(cx, cy, fps);
+
+	QString gpuText = "GPU: Hardware encoder not detected";
+	QString streamEncoder = "software";
+	QString recordEncoder = "software";
+
+#ifdef OBS_AMD_LITE
+	AMDGPUInfo gpu = DetectAMDGPU();
+	if (gpu.detected) {
+		gpuText = QString("GPU: %1 (%2, %3 VRAM)")
+				  .arg(gpu.name)
+				  .arg(GetGenerationName(gpu.generation))
+				  .arg(FormatGiB(gpu.dedicatedVRAM));
+	}
+
+	const char *streamValue = SIMPLE_ENCODER_X264;
+	const char *recordValue = SIMPLE_ENCODER_X264;
+	if (gpu.supportsAV1 && ComboHasValue(ui->simpleOutStrEncoder, SIMPLE_ENCODER_AMD_AV1))
+		streamValue = SIMPLE_ENCODER_AMD_AV1;
+	else if (gpu.supportsHEVC && ComboHasValue(ui->simpleOutStrEncoder, SIMPLE_ENCODER_AMD_HEVC))
+		streamValue = SIMPLE_ENCODER_AMD_HEVC;
+	else if (ComboHasValue(ui->simpleOutStrEncoder, SIMPLE_ENCODER_AMD))
+		streamValue = SIMPLE_ENCODER_AMD;
+
+	if (gpu.supportsHEVC && ComboHasValue(ui->simpleOutRecEncoder, SIMPLE_ENCODER_AMD_HEVC))
+		recordValue = SIMPLE_ENCODER_AMD_HEVC;
+	else if (gpu.supportsAV1 && ComboHasValue(ui->simpleOutRecEncoder, SIMPLE_ENCODER_AMD_AV1))
+		recordValue = SIMPLE_ENCODER_AMD_AV1;
+	else if (ComboHasValue(ui->simpleOutRecEncoder, SIMPLE_ENCODER_AMD))
+		recordValue = SIMPLE_ENCODER_AMD;
+
+	int streamIdx = ui->simpleOutStrEncoder->findData(QString(streamValue));
+	int recordIdx = ui->simpleOutRecEncoder->findData(QString(recordValue));
+	streamEncoder = streamIdx == -1 ? streamValue : ui->simpleOutStrEncoder->itemText(streamIdx);
+	recordEncoder = recordIdx == -1 ? recordValue : ui->simpleOutRecEncoder->itemText(recordIdx);
+#endif
+
+	QString memoryText = GetPhysicalMemoryBytes() ? FormatGiB(GetPhysicalMemoryBytes()) : "Unknown";
+	outputAutoTuneSpecs->setText(QString("CPU: %1 (%2 threads)\nMemory: %3\n%4\nOutput: %5x%6 @ %7 FPS\nRecording drive: %8")
+					     .arg(GetCPUName())
+					     .arg(GetLogicalProcessorCount())
+					     .arg(memoryText)
+					     .arg(gpuText)
+					     .arg(cx)
+					     .arg(cy)
+					     .arg(fps, 0, 'f', fps >= 100.0 ? 0 : 2)
+					     .arg(GetRecordingDriveFree(ui->simpleOutputPath->text())));
+
+	outputAutoTuneRecommendation->setText(QString("Recommended: %1 Kbps video, 160 Kbps audio, Speed preset, %2 for streaming, %3 for recording, High Quality / Medium File Size recording.")
+						      .arg(bitrate)
+						      .arg(streamEncoder)
+						      .arg(recordEncoder));
+}
+
+void OBSBasicSettings::ApplyOutputAutoTune()
+{
+	uint32_t fpsNum = 0;
+	uint32_t fpsDen = 1;
+	main->GetConfigFPS(fpsNum, fpsDen);
+	const double fps = fpsDen ? double(fpsNum) / double(fpsDen) : 0.0;
+	const uint32_t cx = config_get_uint(main->Config(), "Video", "OutputCX");
+	const uint32_t cy = config_get_uint(main->Config(), "Video", "OutputCY");
+
+	const int bitrate = RecommendedVideoBitrate(cx, cy, fps);
+	const char *streamEncoder = SIMPLE_ENCODER_X264;
+	const char *recordEncoder = SIMPLE_ENCODER_X264;
+
+#ifdef OBS_AMD_LITE
+	AMDGPUInfo gpu = DetectAMDGPU();
+	if (gpu.supportsAV1 && ComboHasValue(ui->simpleOutStrEncoder, SIMPLE_ENCODER_AMD_AV1))
+		streamEncoder = SIMPLE_ENCODER_AMD_AV1;
+	else if (gpu.supportsHEVC && ComboHasValue(ui->simpleOutStrEncoder, SIMPLE_ENCODER_AMD_HEVC))
+		streamEncoder = SIMPLE_ENCODER_AMD_HEVC;
+	else if (ComboHasValue(ui->simpleOutStrEncoder, SIMPLE_ENCODER_AMD))
+		streamEncoder = SIMPLE_ENCODER_AMD;
+
+	if (gpu.supportsHEVC && ComboHasValue(ui->simpleOutRecEncoder, SIMPLE_ENCODER_AMD_HEVC))
+		recordEncoder = SIMPLE_ENCODER_AMD_HEVC;
+	else if (gpu.supportsAV1 && ComboHasValue(ui->simpleOutRecEncoder, SIMPLE_ENCODER_AMD_AV1))
+		recordEncoder = SIMPLE_ENCODER_AMD_AV1;
+	else if (ComboHasValue(ui->simpleOutRecEncoder, SIMPLE_ENCODER_AMD))
+		recordEncoder = SIMPLE_ENCODER_AMD;
+#endif
+
+	ui->outputMode->setCurrentIndex(0);
+	ui->outputModePages->setCurrentIndex(0);
+	ui->simpleOutputVBitrate->setValue(bitrate);
+	SetComboByName(ui->simpleOutputABitrate, "160");
+	SetComboByValue(ui->simpleOutStrAEncoder, "aac");
+	SetComboByValue(ui->simpleOutRecAEncoder, "aac");
+
+	SetComboByValue(ui->simpleOutStrEncoder, streamEncoder);
+	SimpleStreamingEncoderChanged();
+	SetComboByValue(ui->simpleOutPreset, "speed");
+	curAMDPreset = "speed";
+	curAMDAV1Preset = "speed";
+
+	SetComboByValue(ui->simpleOutRecQuality, "Small");
+	SetComboByValue(ui->simpleOutRecEncoder, recordEncoder);
+	if (!SetComboByValue(ui->simpleOutRecFormat, "hybrid_mp4"))
+		SetComboByValue(ui->simpleOutRecFormat, "mkv");
+
+	ui->simpleOutAdvanced->setChecked(false);
+	ui->simpleOutCustom->clear();
+	ui->simpleOutRecTrack1->setChecked(true);
+	ui->simpleOutRecTrack2->setChecked(false);
+	ui->simpleOutRecTrack3->setChecked(false);
+	ui->simpleOutRecTrack4->setChecked(false);
+	ui->simpleOutRecTrack5->setChecked(false);
+	ui->simpleOutRecTrack6->setChecked(false);
+
+	SimpleRecordingQualityChanged();
+	SimpleRecordingEncoderChanged();
+	UpdateSimpleOutStreamDelayEstimate();
+	UpdateOutputAutoTuneInfo();
+
+	outputsChanged = true;
+	EnableApplyButton(true);
+
+	if (!QueryAllowedToClose())
+		return;
+
+	SaveSettings();
+	UpdateYouTubeAppDockSettings();
+	ClearChanged();
+
+	if (outputAutoTuneRecommendation)
+		outputAutoTuneRecommendation->setText(outputAutoTuneRecommendation->text() +
+						      "\nApplied and saved. Restart an active stream/recording for output changes to take effect.");
 }
 
 void OBSBasicSettings::LoadListValues(QComboBox *widget, obs_property_t *prop, int index)

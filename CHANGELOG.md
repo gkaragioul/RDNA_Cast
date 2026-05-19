@@ -2,6 +2,12 @@
 
 All notable changes to this project. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.24] - 2026-05-19
+
+### Added
+- Added a PC Specs & Auto Optimize section to Settings > Output that shows CPU, memory, AMD GPU generation/VRAM, output resolution/FPS, and recording drive free space.
+- Added a one-button optimizer that saves low-impact streaming and recording settings using available AMD hardware encoders, Speed preset, platform-friendly bitrate, AAC audio, hybrid MP4 recording, and High Quality / Medium File Size recording.
+
 ## [0.7.23] - 2026-05-19
 
 ### Changed
@@ -138,6 +144,7 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 - Close-to-tray behavior
 - Inno Setup installer with custom branding
 
+[0.7.24]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.24
 [0.7.23]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.23
 [0.7.22]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.22
 [0.7.21]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.21

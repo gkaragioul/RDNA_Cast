@@ -38,6 +38,7 @@ class QCheckBox;
 class QLabel;
 class QButtonGroup;
 class QSlider;
+class QPushButton;
 class OBSPropertiesView;
 class OBSHotkeyWidget;
 
@@ -129,6 +130,9 @@ private:
 
 	QPointer<QLabel> advOutRecWarning;
 	QPointer<QLabel> simpleOutRecWarning;
+	QPointer<QLabel> outputAutoTuneSpecs;
+	QPointer<QLabel> outputAutoTuneRecommendation;
+	QPointer<QPushButton> outputAutoTuneButton;
 
 	QString curPreset;
 	QString curQSVPreset;
@@ -280,6 +284,8 @@ private slots:
 
 private:
 	/* output */
+	void InitOutputAutoTune();
+	void UpdateOutputAutoTuneInfo();
 	void LoadSimpleOutputSettings();
 	void LoadAdvOutputStreamingSettings();
 	void LoadAdvOutputStreamingEncoderProperties();
@@ -458,6 +464,7 @@ private slots:
 	void AdvReplayBufferChanged();
 
 	void SimpleStreamingEncoderChanged();
+	void ApplyOutputAutoTune();
 
 	OBSService SpawnTempService();
 
