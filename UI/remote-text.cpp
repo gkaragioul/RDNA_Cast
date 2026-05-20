@@ -69,6 +69,8 @@ void RemoteTextThread::run()
 		curl_easy_setopt(curl.get(), CURLOPT_HTTPHEADER, header);
 		curl_easy_setopt(curl.get(), CURLOPT_ERRORBUFFER, error);
 		curl_easy_setopt(curl.get(), CURLOPT_FAILONERROR, 1L);
+		curl_easy_setopt(curl.get(), CURLOPT_FOLLOWLOCATION, 1L);
+		curl_easy_setopt(curl.get(), CURLOPT_MAXREDIRS, 5L);
 		curl_easy_setopt(curl.get(), CURLOPT_WRITEFUNCTION, string_write);
 		curl_easy_setopt(curl.get(), CURLOPT_WRITEDATA, &str);
 		curl_obs_set_revoke_setting(curl.get());
@@ -148,6 +150,8 @@ bool GetRemoteFile(const char *url, std::string &str, std::string &error, long *
 		curl_easy_setopt(curl.get(), CURLOPT_ERRORBUFFER, error_in);
 		if (fail_on_error)
 			curl_easy_setopt(curl.get(), CURLOPT_FAILONERROR, 1L);
+		curl_easy_setopt(curl.get(), CURLOPT_FOLLOWLOCATION, 1L);
+		curl_easy_setopt(curl.get(), CURLOPT_MAXREDIRS, 5L);
 		curl_easy_setopt(curl.get(), CURLOPT_WRITEFUNCTION, string_write);
 		curl_easy_setopt(curl.get(), CURLOPT_WRITEDATA, &str);
 		curl_obs_set_revoke_setting(curl.get());

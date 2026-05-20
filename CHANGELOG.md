@@ -2,6 +2,14 @@
 
 All notable changes to this project. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.26] - 2026-05-21
+
+### Fixed
+- Assisted updater now checks releases from the canonical `georgekgr12/RDNA_Cast` endpoint.
+- Shared remote fetches now follow HTTP redirects, preventing GitHub owner or repository rename redirects from breaking update checks.
+- Installer, About, README, and changelog links now point at `georgekgr12/RDNA_Cast`.
+- AMD-lite builds now disable `obs-websocket` while keeping the browser websocket API interface needed by `obs-browser`.
+
 ## [0.7.25] - 2026-05-20
 
 ### Fixed
@@ -152,24 +160,25 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 - Close-to-tray behavior
 - Inno Setup installer with custom branding
 
-[0.7.25]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.25
-[0.7.24]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.24
-[0.7.23]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.23
-[0.7.22]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.22
-[0.7.21]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.21
-[0.7.20]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.20
-[0.7.19]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.19
-[0.7.18]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.18
-[0.7.17]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.17
-[0.7.16]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.16
-[0.7.15]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.15
-[0.7.14]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.14
-[0.7.13]: https://github.com/karagioules/RDNA_Cast/releases/tag/v0.7.13
-[0.7.0]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.7.0
-[0.6.7]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.7
-[0.6.6]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.6
-[0.6.5]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.5
-[0.6.4]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.4
-[0.6.3]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.3
-[0.6.2]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.6.2
-[0.5.0]: https://github.com/georgekgr12/RDNACast/releases/tag/v0.5.0
+[0.7.26]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.26
+[0.7.25]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.25
+[0.7.24]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.24
+[0.7.23]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.23
+[0.7.22]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.22
+[0.7.21]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.21
+[0.7.20]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.20
+[0.7.19]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.19
+[0.7.18]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.18
+[0.7.17]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.17
+[0.7.16]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.16
+[0.7.15]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.15
+[0.7.14]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.14
+[0.7.13]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.13
+[0.7.0]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.7.0
+[0.6.7]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.6.7
+[0.6.6]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.6.6
+[0.6.5]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.6.5
+[0.6.4]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.6.4
+[0.6.3]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.6.3
+[0.6.2]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.6.2
+[0.5.0]: https://github.com/georgekgr12/RDNA_Cast/releases/tag/v0.5.0

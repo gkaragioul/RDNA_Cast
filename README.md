@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/karagioules/RDNA_Cast/releases/latest">Download</a> &bull;
+  <a href="https://github.com/georgekgr12/RDNA_Cast/releases/latest">Download</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#performance">Performance</a> &bull;
   <a href="#amd-encoder-fixes">AMD Fixes</a> &bull;
@@ -134,7 +134,7 @@ Any AMD system with a Zen 2+ CPU and RDNA+ GPU should work. AVX2 required (all Z
 
 ### Quick Build
 ```cmd
-git clone https://github.com/karagioules/RDNA_Cast.git
+git clone https://github.com/georgekgr12/RDNA_Cast.git
 cd RDNA_Cast
 cmake --preset amd-lite-x64
 cmake --build build_amd_lite --config RelWithDebInfo --parallel
@@ -142,7 +142,7 @@ cmake --build build_amd_lite --config RelWithDebInfo --parallel
 
 ### With Browser Source
 ```cmd
-cmake --preset amd-lite-x64 -DENABLE_BROWSER=ON -DENABLE_WEBSOCKET=ON
+cmake --preset amd-lite-x64 -DENABLE_BROWSER=ON -DENABLE_WEBSOCKET=OFF
 cmake --build build_amd_lite --config RelWithDebInfo --parallel
 ```
 

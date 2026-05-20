@@ -500,7 +500,7 @@ GKAboutDialog::GKAboutDialog(QWidget *parent) : QDialog(parent)
 		"THIRD_PARTY_LICENSES.md installed alongside the application.\n\n"
 		"OBS Studio: Copyright (C) Hugh Bailey and contributors.\n"
 		"AMD AMF SDK: Copyright (c) Advanced Micro Devices, Inc.\n\n"
-		"Source: https://github.com/karagioules/RDNA_Cast");
+		"Source: https://github.com/georgekgr12/RDNA_Cast");
 	eulaBrowser->setReadOnly(true);
 	layout->addWidget(eulaBrowser);
 

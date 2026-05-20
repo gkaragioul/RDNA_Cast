@@ -7,7 +7,7 @@ echo   Target: AMD Radeon (Zen 2+ / RDNA+)
 echo ============================================================
 echo.
 
-set "APP_VERSION=0.7.25"
+set "APP_VERSION=0.7.26"
 set "INSTALLER_NAME=RDNA_Cast_Setup_%APP_VERSION%.exe"
 
 :: Step 0: Find Visual Studio
@@ -40,7 +40,7 @@ echo.
 
 :: Step 1: Configure with CMake
 echo [2/5] Configuring CMake (amd-lite-x64 preset, RDNA Cast)...
-cmake --preset amd-lite-x64
+cmake --preset amd-lite-x64 -DOBS_VERSION_OVERRIDE=%APP_VERSION% -DENABLE_WEBSOCKET=OFF
 if errorlevel 1 (
     echo ERROR: CMake configuration failed.
     echo This usually means dependencies are missing. Check the output above.
