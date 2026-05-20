@@ -3,7 +3,7 @@
 
 #define MyAppName "RDNA Cast"
 #define MyAppNameShort "RDNACast"
-#define MyAppVersion "0.7.26"
+#define MyAppVersion "0.7.27"
 #define MyAppPublisher "George Karagioules"
 #define MyAppExeName "obs64.exe"
 ; New AppId for RDNA Cast (separate from legacy GK_OBS_Lite_AMD).
@@ -19,8 +19,8 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-AppPublisherURL=https://github.com/georgekgr12/RDNA_Cast
-AppSupportURL=https://github.com/georgekgr12/RDNA_Cast/issues
+AppPublisherURL=https://github.com/gkaragioul/RDNA_Cast
+AppSupportURL=https://github.com/gkaragioul/RDNA_Cast/issues
 DefaultDirName={autopf}\{#MyAppNameShort}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes

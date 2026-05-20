@@ -20,13 +20,13 @@ General Public License terms below. This installer notice does not impose
 additional restrictions beyond the applicable open-source licenses.
 
 Corresponding source code is available at:
-https://github.com/georgekgr12/RDNA_Cast
+https://github.com/gkaragioul/RDNA_Cast
 
 Release binaries are published at:
-https://github.com/georgekgr12/RDNA_Cast/releases
+https://github.com/gkaragioul/RDNA_Cast/releases
 
 License inquiries and source requests:
-https://github.com/georgekgr12/RDNA_Cast/issues
+https://github.com/gkaragioul/RDNA_Cast/issues
 
 OBS Studio
 ----------
@@ -514,6 +514,6 @@ This file is a courtesy summary - the authoritative license for each component i
 
 ---
 
-If you spot a missing or incorrectly-listed component, please open an issue at <https://github.com/georgekgr12/RDNA_Cast/issues>.
+If you spot a missing or incorrectly-listed component, please open an issue at <https://github.com/gkaragioul/RDNA_Cast/issues>.
 
 

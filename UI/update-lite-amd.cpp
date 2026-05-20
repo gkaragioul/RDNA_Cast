@@ -88,24 +88,45 @@ static bool IsNewerVersion(const QString &latest, const QString &current)
 
 void GKUpdateThread::run()
 {
-	/* Fetch latest release from GitHub API */
+	/* Fetch latest release from GitHub API — use libcurl directly so we can
+	 * set CURLOPT_FOLLOWLOCATION and survive any future repo renames/redirects. */
 	std::string output;
-	std::string error;
 	long responseCode = 0;
-	std::string versionHeader = "User-Agent: RDNACast/";
-	versionHeader += GK_OBS_LITE_VERSION;
 
-	std::vector<std::string> extraHeaders;
-	extraHeaders.push_back(versionHeader);
-	extraHeaders.push_back("Accept: application/vnd.github.v3+json");
-	bool success = GetRemoteFile(GK_OBS_LITE_RELEASES_API, output, error, &responseCode, nullptr, std::string(),
-				     nullptr, extraHeaders, nullptr, 15, false);
+	CURL *curl = curl_easy_init();
+	if (!curl) {
+		if (manualCheck)
+			emit UpdateError("Failed to initialize HTTP client.");
+		return;
+	}
 
-	if (!success || responseCode != 200) {
+	std::string userAgent = std::string("RDNACast/") + GK_OBS_LITE_VERSION;
+	struct curl_slist *headers = nullptr;
+	headers = curl_slist_append(headers, "Accept: application/vnd.github.v3+json");
+
+	curl_easy_setopt(curl, CURLOPT_URL, GK_OBS_LITE_RELEASES_API);
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, userAgent.c_str());
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
+			 +[](char *ptr, size_t size, size_t nmemb, void *data) -> size_t {
+				 static_cast<std::string *>(data)->append(ptr, size * nmemb);
+				 return size * nmemb;
+			 });
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &output);
+	curl_obs_set_revoke_setting(curl);
+
+	CURLcode res = curl_easy_perform(curl);
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+	curl_slist_free_all(headers);
+	curl_easy_cleanup(curl);
+
+	if (res != CURLE_OK || responseCode != 200) {
 		if (manualCheck) {
-			QString errMsg = QString("Failed to check for updates (HTTP %1)").arg(responseCode);
-			if (!error.empty())
-				errMsg += QString(": %1").arg(QString::fromStdString(error));
+			QString errMsg = responseCode > 0
+						 ? QString("Failed to check for updates (HTTP %1)").arg(responseCode)
+						 : QString("Failed to check for updates: %1").arg(curl_easy_strerror(res));
 			emit UpdateError(errMsg);
 		}
 		return;
@@ -500,7 +521,7 @@ GKAboutDialog::GKAboutDialog(QWidget *parent) : QDialog(parent)
 		"THIRD_PARTY_LICENSES.md installed alongside the application.\n\n"
 		"OBS Studio: Copyright (C) Hugh Bailey and contributors.\n"
 		"AMD AMF SDK: Copyright (c) Advanced Micro Devices, Inc.\n\n"
-		"Source: https://github.com/georgekgr12/RDNA_Cast");
+		"Source: https://github.com/gkaragioul/RDNA_Cast");
 	eulaBrowser->setReadOnly(true);
 	layout->addWidget(eulaBrowser);
 

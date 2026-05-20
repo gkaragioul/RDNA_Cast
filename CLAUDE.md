@@ -16,8 +16,8 @@ cmake --build build_amd_lite --config RelWithDebInfo --parallel
 ```
 
 ## Repo
-- GitHub: https://github.com/georgekgr12/RDNA_Cast (renamed from `GK_OBS_LITE_AMD` in v0.7.0)
-- Releases: https://github.com/georgekgr12/RDNA_Cast/releases
+- GitHub: https://github.com/gkaragioul/RDNACast (renamed from `GK_OBS_LITE_AMD` in v0.7.0)
+- Releases: https://github.com/gkaragioul/RDNACast/releases
 - Branch: `main` only (no dev branch)
 - Tags: semver starting at `v0.5.0`
 - Based on OBS Studio 31.0.3 (upstream remote: `upstream`)
@@ -68,7 +68,7 @@ obs-ffmpeg, obs-x264, obs-filters, obs-transitions, obs-outputs, obs-text, image
 obs-nvenc, obs-qsv11, nv-filters, obs-browser, obs-websocket, obs-webrtc, vlc-video, decklink, aja, obs-vst, text-freetype2, obs-libfdk, coreaudio-encoder, all macOS plugins, all Linux/BSD plugins, oss-audio, sndio
 
 ## User Preferences
-- User: Georg (georgekgr12 on GitHub)
+- User: Georg (gkaragioul on GitHub)
 - Publisher name in installers: George Karagioules
 - Inno Setup installed at: `%LOCALAPPDATA%\Programs\Inno Setup 6\`
 - Has VS2022 BuildTools + CMake 4.3 installed
