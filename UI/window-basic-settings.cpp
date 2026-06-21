@@ -453,8 +453,10 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 
 	/* clang-format off */
 	HookWidget(ui->language,             COMBO_CHANGED,  GENERAL_CHANGED);
+#ifndef OBS_AMD_LITE
 	HookWidget(ui->updateChannelBox,     COMBO_CHANGED,  GENERAL_CHANGED);
 	HookWidget(ui->enableAutoUpdates,    CHECK_CHANGED,  GENERAL_CHANGED);
+#endif
 	HookWidget(ui->openStatsOnStartup,   CHECK_CHANGED,  GENERAL_CHANGED);
 	HookWidget(ui->hideOBSFromCapture,   CHECK_CHANGED,  GENERAL_CHANGED);
 	HookWidget(ui->warnBeforeStreamStart,CHECK_CHANGED,  GENERAL_CHANGED);
@@ -695,7 +697,9 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 	ui->advOutFFVBitrate->setSuffix(" Kbps");
 	ui->advOutFFABitrate->setSuffix(" Kbps");
 
-#if !defined(_WIN32) && !defined(ENABLE_SPARKLE_UPDATER)
+#if defined(OBS_AMD_LITE)
+	ui->updateSettingsGroupBox->hide();
+#elif !defined(_WIN32) && !defined(ENABLE_SPARKLE_UPDATER)
 	delete ui->updateSettingsGroupBox;
 	ui->updateSettingsGroupBox = nullptr;
 	ui->updateChannelLabel = nullptr;
@@ -1403,7 +1407,7 @@ void OBSBasicSettings::LoadGeneralSettings()
 
 	LoadLanguageList();
 
-#if defined(_WIN32) || defined(ENABLE_SPARKLE_UPDATER)
+#if (defined(_WIN32) || defined(ENABLE_SPARKLE_UPDATER)) && !defined(OBS_AMD_LITE)
 	bool enableAutoUpdates = config_get_bool(App()->GetAppConfig(), "General", "EnableAutoUpdates");
 	ui->enableAutoUpdates->setChecked(enableAutoUpdates);
 
@@ -3280,7 +3284,7 @@ void OBSBasicSettings::SaveGeneralSettings()
 	if (WidgetChanged(ui->language))
 		config_set_string(App()->GetUserConfig(), "General", "Language", language.c_str());
 
-#if defined(_WIN32) || defined(ENABLE_SPARKLE_UPDATER)
+#if (defined(_WIN32) || defined(ENABLE_SPARKLE_UPDATER)) && !defined(OBS_AMD_LITE)
 	if (WidgetChanged(ui->enableAutoUpdates))
 		config_set_bool(App()->GetAppConfig(), "General", "EnableAutoUpdates",
 				ui->enableAutoUpdates->isChecked());
@@ -4386,10 +4390,12 @@ bool OBSBasicSettings::AskIfCanCloseSettings()
 		forceAuthReload = false;
 	}
 
+#ifndef OBS_AMD_LITE
 	if (forceUpdateCheck) {
 		main->CheckForUpdates(false);
 		forceUpdateCheck = false;
 	}
+#endif
 
 	return canCloseSettings;
 }

@@ -2,6 +2,12 @@
 
 All notable changes to this project. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.28] - 2026-06-22
+
+### Changed
+- Removed the RDNA Cast assisted updater. Help -> GitHub Releases now opens the official GitHub Releases page for installers.
+- Disabled the lite auto-update settings and in-app repair/update backend so updates are distributed through GitHub only.
+
 ## [0.7.27] - 2026-05-21
 
 ### Fixed

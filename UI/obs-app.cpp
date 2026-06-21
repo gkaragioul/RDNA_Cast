@@ -438,7 +438,11 @@ bool OBSApp::InitGlobalConfigDefaults()
 	config_set_default_uint(appConfig, "General", "MaxLogs", 10);
 	config_set_default_int(appConfig, "General", "InfoIncrement", -1);
 	config_set_default_string(appConfig, "General", "ProcessPriority", "Normal");
+#ifdef OBS_AMD_LITE
+	config_set_default_bool(appConfig, "General", "EnableAutoUpdates", false);
+#else
 	config_set_default_bool(appConfig, "General", "EnableAutoUpdates", true);
+#endif
 
 #if _WIN32
 	config_set_default_string(appConfig, "Video", "Renderer", "Direct3D 11");
@@ -1397,11 +1401,7 @@ bool OBSApp::IsPortableMode()
 bool OBSApp::IsUpdaterDisabled()
 {
 #ifdef OBS_AMD_LITE
-	/* OBS Lite AMD Edition: Always report updater as enabled.
-	 * Our GitHub-based updater is independent from the stock OBS updater.
-	 * The stock auto-update is still disabled (opt_disable_updater=true)
-	 * but the Check for Updates menu item needs to stay clickable. */
-	return false;
+	return true;
 #else
 	return opt_disable_updater;
 #endif

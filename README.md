@@ -67,7 +67,7 @@ RDNA Cast is a **lightweight fork of [OBS Studio](https://obsproject.com) 31.0.3
 - **Portable by default** — settings, scenes, profiles live next to the executable
 - **Close-to-tray** — X minimizes to system tray (like Steam/AMD Adrenalin). Recording keeps running
 - **Tray controls** — right-click for Stream, Record, Replay Buffer, Save Replay, Exit
-- **Built-in assisted updater** — Help → Check for Updates fetches the latest installer from GitHub Releases
+- **GitHub Releases updates** — Help → GitHub Releases opens the official release page for installers
 - **About dialog** with GPLv2-or-later, MIT additions, and bundled-library notices
 - **Windows installer** with custom branding via Inno Setup
 

@@ -32,6 +32,7 @@
 #include <QFileDialog>
 #include <QScreen>
 #include <QColorDialog>
+#include <QUrl>
 #include <QSizePolicy>
 #include <QScrollBar>
 #include <QTextStream>
@@ -2542,16 +2543,20 @@ void OBSBasic::OBSInit()
 
 #if defined(_WIN32) || defined(__APPLE__)
 #ifndef OBS_AMD_LITE
-	/* OBS Lite AMD Edition: Don't disable Check for Updates — we have our
-	 * own GitHub-based updater that works independently of the stock OBS
-	 * updater. The stock updater is disabled (opt_disable_updater=true)
-	 * but our updater should still be accessible. */
 	if (App()->IsUpdaterDisabled()) {
 		ui->actionCheckForUpdates->setEnabled(false);
 #if defined(_WIN32)
 		ui->actionRepair->setEnabled(false);
 #endif
 	}
+#else
+	ui->actionCheckForUpdates->setText(QStringLiteral("GitHub Releases"));
+	ui->actionCheckForUpdates->setToolTip(QStringLiteral("Open RDNA Cast releases on GitHub"));
+	ui->actionCheckForUpdates->setStatusTip(QStringLiteral("Open RDNA Cast releases on GitHub"));
+#if defined(_WIN32)
+	if (ui->actionRepair)
+		ui->actionRepair->setEnabled(false);
+#endif
 #endif
 #endif
 
@@ -4038,32 +4043,8 @@ void OBSBasic::TimedCheckForUpdates()
 void OBSBasic::CheckForUpdates(bool manualUpdate)
 {
 #ifdef OBS_AMD_LITE
-	ui->actionCheckForUpdates->setEnabled(false);
-
-	GKUpdateThread *gkThread = new GKUpdateThread(manualUpdate, this);
-
-	connect(gkThread, &GKUpdateThread::UpdateAvailable, this,
-		[this](const QString &version, const QString &url, const QString &notes) {
-			ui->actionCheckForUpdates->setEnabled(true);
-			GKUpdateDialog *dlg = new GKUpdateDialog(this, version, url, notes);
-			dlg->setAttribute(Qt::WA_DeleteOnClose, true);
-			dlg->exec();
-		});
-
-	connect(gkThread, &GKUpdateThread::NoUpdate, this, [this](bool manual) {
-		ui->actionCheckForUpdates->setEnabled(true);
-		if (manual)
-			QMessageBox::information(this, "RDNA Cast",
-						 "You are running the latest version (" GK_OBS_LITE_VERSION ").");
-	});
-
-	connect(gkThread, &GKUpdateThread::UpdateError, this, [this](const QString &error) {
-		ui->actionCheckForUpdates->setEnabled(true);
-		QMessageBox::warning(this, "Update Check Failed", error);
-	});
-
-	connect(gkThread, &QThread::finished, gkThread, &QObject::deleteLater);
-	gkThread->start();
+	UNUSED_PARAMETER(manualUpdate);
+	QDesktopServices::openUrl(QUrl(QStringLiteral(GK_OBS_LITE_RELEASES_URL)));
 #elif _WIN32
 	ui->actionCheckForUpdates->setEnabled(false);
 	ui->actionRepair->setEnabled(false);
@@ -6436,7 +6417,7 @@ void OBSBasic::on_actionCheckForUpdates_triggered()
 
 void OBSBasic::on_actionRepair_triggered()
 {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(OBS_AMD_LITE)
 	ui->actionCheckForUpdates->setEnabled(false);
 	ui->actionRepair->setEnabled(false);
 
