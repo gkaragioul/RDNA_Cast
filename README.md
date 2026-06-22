@@ -165,6 +165,6 @@ If you use RDNA Cast and want to support the upstream project that makes it poss
 
 RDNA Cast is an OBS Studio fork. The combined application and binary distributions are redistributed under the **GNU General Public License v2.0 or later**; see [COPYING](COPYING).
 
-Original RDNA Cast additions are also offered under the **MIT License** by George Karagioules. That MIT grant applies only to original RDNA Cast additions and does not relicense OBS Studio or the combined OBS-derived application.
+Original RDNA Cast additions are also offered under the **MIT License** by George Karagioules; see [RDNA_CAST_ADDITIONS_LICENSE.md](RDNA_CAST_ADDITIONS_LICENSE.md). That MIT grant applies only to original RDNA Cast additions and does not relicense OBS Studio or the combined OBS-derived application.
 
 Bundled third-party libraries retain their own licenses. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md). Installers ship `LICENSE.txt`, `COPYING`, `AUTHORS`, and `THIRD_PARTY_LICENSES.md` alongside the application.
